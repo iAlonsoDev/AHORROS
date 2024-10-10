@@ -1,0 +1,1041 @@
+﻿
+Imports System.Data.SqlClient
+Imports System.Globalization
+Imports Google.Cloud.Firestore
+
+Public Class FormMovimientos
+
+    ReadOnly obj As New BUSQUEDADINAMICA
+
+    ' Diccionario para almacenar todas las transacciones
+    Dim transactions As New Dictionary(Of String, Dictionary(Of String, Object))()
+
+
+    Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        LoadMapas()
+        LoadForm()
+    End Sub
+
+    Public Sub LoadForm()
+
+        Timer1.Start()
+
+        LlenarBancos()
+        CargarIDBanco()
+
+        LlenarCuentas()
+        CargarIDCuentas()
+
+        CargarMovimientos()
+        RB_DEPOSITO.Checked = True
+        TIPO = "DEPOSIT"
+        ReferenciaTextBox.Text = "NINGUNA"
+        DepositoTextBox.Text = ""
+        DepositoTextBox.Focus()
+        DepositoTextBox.Select()
+
+        GrafCuenta()
+        GrafBanco()
+
+        IDAHORRO = 0
+
+    End Sub
+
+
+    Public Async Sub LoadMapas()
+        ' Llamar a la inicialización al cargar la aplicación
+        Await InitializeData()
+    End Sub
+
+    ' Función para cargar todas las transacciones desde Firebase
+    Async Function LoadTransactions() As Task
+        Try
+            ' Inicializa Firebase
+            Firebase()
+
+            ' Obtiene la referencia a la colección "Transactions"
+            Dim Qref As Query = db.Collection("Transactions")
+            ' Obtiene el snapshot de la consulta de forma asíncrona
+            Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+            ' Itera a través de los documentos del snapshot
+            For Each transactionDoc As DocumentSnapshot In Snap.Documents
+                ' Convierte cada documento a un diccionario
+                Dim transactionId As String = transactionDoc.Id
+                Dim transactionData As Dictionary(Of String, Object) = transactionDoc.ToDictionary()
+                transactions(transactionId) = transactionData
+            Next
+        Catch ex As Exception
+            ' Manejar las excepciones según sea necesario
+            Console.WriteLine($"Error: {ex.Message}")
+        End Try
+    End Function
+
+    ' Función para inicializar los datos
+    Async Function InitializeData() As Task
+        Await LoadTransactions()
+        CalculateTotalAvailable()
+        LlenarTotal()
+        LlenarUltimaTransaccion()
+        BestRanking()
+        CargarCantRegistros()
+        Promedio()
+    End Function
+
+
+    ' Función para calcular el total disponible y actualizar el control de texto
+    Sub CalculateTotalAvailable()
+        ' Inicializa la variable para el total disponible
+        Dim totavailable As Double = 0
+
+        ' Itera a través de las transacciones en el diccionario
+        For Each transactionData As Dictionary(Of String, Object) In transactions.Values
+            ' Suma el monto al total disponible si idbank no es igual a 8
+            If CInt(transactionData("idbank")) <> 8 Then
+                totavailable += CDbl(transactionData("amount"))
+            End If
+        Next
+
+        ' Asigna el total disponible al control de texto
+        Txt_TotalAvailable.Text = "Lps " & Format(totavailable, "#,###.##")
+    End Sub
+
+    Public Async Sub GrafCuenta()
+
+        ' Diccionario para almacenar el total de dinero por cuenta
+        Dim totalMoneyPerAccount As New Dictionary(Of String, Double)()
+
+        ' Obtener los nombres de los bancos
+        Dim bankNames As New Dictionary(Of Integer, String)()
+
+        ' Cargar nombres de bancos desde la colección "Banks"
+        Dim banksRef As CollectionReference = db.Collection("Banks")
+        Dim banksSnap As QuerySnapshot = Await banksRef.GetSnapshotAsync()
+
+        For Each bankDoc As DocumentSnapshot In banksSnap.Documents
+            Dim bankId As Integer = Convert.ToInt32(bankDoc.Id)
+            Dim bankData As Dictionary(Of String, Object) = bankDoc.ToDictionary()
+            Dim bankName As String = bankData("namebank").ToString()
+            bankNames.Add(bankId, bankName)
+        Next
+
+        ' Obtener los nombres de las cuentas
+        Dim accountNames As New Dictionary(Of Integer, String)()
+
+        ' Cargar nombres de cuentas desde la colección "Accounts"
+        Dim accountsRef As CollectionReference = db.Collection("Accounts")
+        Dim accountsSnap As QuerySnapshot = Await accountsRef.GetSnapshotAsync()
+
+        For Each accountDoc As DocumentSnapshot In accountsSnap.Documents
+            Dim accountId As Integer = Convert.ToInt32(accountDoc.Id)
+            Dim accountData As Dictionary(Of String, Object) = accountDoc.ToDictionary()
+            Dim accountName As String = accountData("nameaccount").ToString()
+            accountNames.Add(accountId, accountName)
+        Next
+
+        ' Cargar datos de transacciones y calcular el total de dinero por cuenta
+        Try
+            ' Obtener datos de Firebase
+            Dim Qref As Query = db.Collection("Transactions")
+            Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+            ' Iterar sobre cada documento de transacción
+            For Each transactionDoc As DocumentSnapshot In Snap.Documents
+                Dim transactionData As Dictionary(Of String, Object) = transactionDoc.ToDictionary()
+
+                ' Convertir y obtener los datos de la transacción
+                Dim idAccount As Integer = Convert.ToInt32(transactionData("idaccount"))
+                Dim amount As Double = Convert.ToDouble(transactionData("amount"))
+
+                ' Obtener el nombre de la cuenta
+                If accountNames.ContainsKey(idAccount) Then
+                    Dim accountName As String = accountNames(idAccount)
+
+                    ' Actualizar el total de dinero por cuenta
+                    If totalMoneyPerAccount.ContainsKey(accountName) Then
+                        totalMoneyPerAccount(accountName) += amount
+                    Else
+                        totalMoneyPerAccount(accountName) = amount
+                    End If
+                End If
+            Next
+
+            ' Listas para almacenar los datos para la gráfica
+            Dim Amounts As New ArrayList()
+            Dim Descriptions As New ArrayList()
+
+            ' Limpiar los puntos de la serie de la gráfica antes de agregar nuevos datos
+            ChartTotCuenta.Series(0).Points.Clear()
+
+            ' Actualizar la gráfica con los datos obtenidos
+            For Each kvp As KeyValuePair(Of String, Double) In totalMoneyPerAccount
+                If kvp.Value <> 0 Then
+                    Descriptions.Add(kvp.Key & " - " & Format(kvp.Value, "#,###.##"))
+                    Amounts.Add(kvp.Value)
+                End If
+            Next
+
+            ' Enlazar los datos a la gráfica
+            ChartTotCuenta.Series(0).Points.DataBindXY(Descriptions, Amounts)
+
+        Catch ex As Exception
+            ' Manejar las excepciones según sea necesario
+            Console.WriteLine($"Error: {ex.Message}")
+        End Try
+
+    End Sub
+
+    Public Async Sub GrafBanco()
+
+        ' Diccionario para almacenar el total de dinero por banco
+        Dim totalMoneyPerBank As New Dictionary(Of String, Double)()
+
+        ' Obtener los nombres de los bancos
+        Dim bankNames As New Dictionary(Of Integer, String)()
+
+        ' Cargar nombres de bancos desde la colección "Banks"
+        Dim banksRef As CollectionReference = db.Collection("Banks")
+        Dim banksSnap As QuerySnapshot = Await banksRef.GetSnapshotAsync()
+
+        For Each bankDoc As DocumentSnapshot In banksSnap.Documents
+            Dim bankId As Integer = Convert.ToInt32(bankDoc.Id)
+            Dim bankData As Dictionary(Of String, Object) = bankDoc.ToDictionary()
+            Dim bankName As String = bankData("namebank").ToString()
+            bankNames.Add(bankId, bankName)
+        Next
+
+        Try
+            ' Obtener datos de Firebase
+            Dim Qref As Query = db.Collection("Transactions")
+            Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+            ' Iterar sobre cada documento de transacción
+            For Each transactionDoc As DocumentSnapshot In Snap.Documents
+                Dim transactionData As Dictionary(Of String, Object) = transactionDoc.ToDictionary()
+
+                ' Convertir y obtener los datos de la transacción
+                Dim idBank As Integer = Convert.ToInt32(transactionData("idbank"))
+                Dim amount As Double = Convert.ToDouble(transactionData("amount"))
+
+                ' Obtener el nombre del banco
+                If bankNames.ContainsKey(idBank) Then
+                    Dim bankName As String = bankNames(idBank)
+
+                    ' Actualizar el total de dinero por banco
+                    If totalMoneyPerBank.ContainsKey(bankName) Then
+                        totalMoneyPerBank(bankName) += amount
+                    Else
+                        totalMoneyPerBank(bankName) = amount
+                    End If
+                End If
+            Next
+
+            ' Listas para almacenar los datos para la gráfica
+            Dim Amounts2 As New ArrayList()
+            Dim Descriptions2 As New ArrayList()
+
+            ' Limpiar los puntos de la serie de la gráfica antes de agregar nuevos datos
+            ChartTotBancos.Series(0).Points.Clear()
+
+            ' Actualizar la gráfica con los datos obtenidos
+            For Each kvp As KeyValuePair(Of String, Double) In totalMoneyPerBank
+                Descriptions2.Add(kvp.Key & " - " & Format(kvp.Value, "#,###.##"))
+                Amounts2.Add(kvp.Value)
+            Next
+
+            ' Enlazar los datos a la gráfica
+            ChartTotBancos.Series(0).Points.DataBindXY(Descriptions2, Amounts2)
+
+        Catch ex As Exception
+            ' Manejar las excepciones según sea necesario
+            Console.WriteLine($"Error: {ex.Message}")
+        End Try
+
+
+    End Sub
+
+    Public Sub LlenarTotal()
+        Try
+            ' Verificar si el diccionario no está vacío
+            If transactions.Count > 0 Then
+                ' Encontrar la transacción con el ID más alto
+                Dim highestIdTransaction As Dictionary(Of String, Object) = transactions.OrderByDescending(Function(t) Convert.ToInt32(t.Key)).First().Value
+
+                ' Obtener el resumen de la transacción con el ID más alto
+                Dim TOT As Double = CDbl(highestIdTransaction("summary"))
+
+                ' Actualizar los controles de texto
+                TotalTextBox.Text = Format(TOT, "#,###.##")
+                TxtCant_TotalBalance.Text = "Lps " & Format(TOT, "#,###.##")
+            End If
+        Catch ex As Exception
+            ' Manejar las excepciones según sea necesario
+            Console.WriteLine($"Error: {ex.Message}")
+        End Try
+    End Sub
+
+    Public Async Sub BestAccount()
+
+        ' Diccionario para almacenar el total de dinero por banco
+        Dim totalMoneyPerBank As New Dictionary(Of Integer, Double)()
+
+        Firebase()
+
+        Try
+            ' Obtener datos de Firebase
+            Dim Qref As Query = db.Collection("Transactions")
+            Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+            ' Itera sobre cada documento de transacción
+            For Each transactionDoc As DocumentSnapshot In Snap.Documents
+                ' Accede a los campos del documento correctamente
+                Dim idBank As Integer = Convert.ToInt32(transactionDoc.ToDictionary("idbank"))
+                Dim amount As Double = Convert.ToDouble(transactionDoc.ToDictionary("amount"))
+                ' Actualiza el total de dinero por banco
+                If totalMoneyPerBank.ContainsKey(idBank) Then
+                    totalMoneyPerBank(idBank) += amount
+                Else
+                    totalMoneyPerBank(idBank) = amount
+                End If
+            Next
+
+            ' Encuentra el banco con más dinero
+            Dim bankWithMostMoney As Integer = 0
+            Dim mostMoney As Double = 0.0
+
+            For Each kvp As KeyValuePair(Of Integer, Double) In totalMoneyPerBank
+                If kvp.Value > mostMoney Then
+                    bankWithMostMoney = kvp.Key
+                    mostMoney = kvp.Value
+                End If
+            Next
+
+            ' Obtén el nombre del banco con más dinero
+            Dim bankDoc As DocumentSnapshot = Await db.Collection("Banks").Document(bankWithMostMoney.ToString()).GetSnapshotAsync()
+
+            If bankDoc.Exists Then
+                Dim bankName As String = bankDoc.ToDictionary("namebank").ToString()
+
+                ' Actualiza la UI desde el hilo de la interfaz de usuario
+                TxtTitle_TopBalance.Invoke(Sub()
+                                               TxtTitle_TopBalance.Text = "TOP - " & bankName
+                                               TxtCant_TopBalance.Text = "Lps " & Convert.ToString(Format(Val(mostMoney), "#,###.##"))
+                                           End Sub)
+            End If
+
+        Catch ex As Exception
+            ' Maneja las excepciones según sea necesario
+            Console.WriteLine($"Error: {ex.Message}")
+        End Try
+
+    End Sub
+
+    Public Sub LlenarUltimaTransaccion()
+        Try
+            ' Verificar si el diccionario no está vacío
+            If transactions.Count > 0 Then
+                ' Encontrar la transacción con el ID más alto
+                Dim highestIdTransaction As Dictionary(Of String, Object) = transactions.OrderByDescending(Function(t) Convert.ToInt32(t.Key)).First().Value
+
+                ' Obtener el monto de la última transacción
+                Dim LAST As Double = CDbl(highestIdTransaction("amount"))
+
+                ' Actualizar el control de texto
+                TxtCant_LastTransaction.Text = "Lps " & Format(LAST, "#,###.##")
+            End If
+        Catch ex As Exception
+            ' Manejar las excepciones según sea necesario
+            Console.WriteLine($"Error: {ex.Message}")
+        End Try
+    End Sub
+    'Public Async Sub LlenarUltimaTransaccion()
+
+    '    ' Obtener datos de Firebase
+    '    Firebase()
+
+    '    Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction").Limit(1)
+    '    Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+    '    For Each docSnapshot As DocumentSnapshot In Snap.Documents
+    '        ' Acceder a los datos dentro de cada documento
+    '        Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+    '        ' Obtener idbank y namebank
+    '        LAST = data("amount")
+    '        TxtCant_LastTransaction.Text = "Lps " + Format(Val(LAST), "#,###.##")
+    '    Next
+
+    'End Sub
+
+    Public Sub BestRanking()
+        Try
+            ' Verificar si el diccionario no está vacío
+            If transactions.Count > 0 Then
+                ' Encontrar la transacción con el valor de summary más alto
+                Dim bestTransaction As Dictionary(Of String, Object) = transactions.Values.OrderByDescending(Function(t) CDbl(t("summary"))).First()
+
+                ' Obtener el valor de summary de la mejor transacción
+                Dim BEST As Double = CDbl(bestTransaction("summary"))
+
+                ' Actualizar el control de texto
+                Txt_BestRanking.Text = "Lps " & Format(BEST, "#,###.##")
+            End If
+        Catch ex As Exception
+            ' Manejar las excepciones según sea necesario
+            Console.WriteLine($"Error: {ex.Message}")
+        End Try
+    End Sub
+
+    'Public Async Sub BestRanking()
+
+    '    Firebase()
+
+    '    Dim Qref As Query = db.Collection("Transactions").OrderByDescending("summary").Limit(1)
+    '    Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+    '    For Each docSnapshot As DocumentSnapshot In Snap.Documents
+    '        ' Acceder a los datos dentro de cada documento
+    '        Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+    '        ' Obtener idbank y namebank
+    '        BEST = data("summary")
+    '        Txt_BestRanking.Text = "Lps " + Format(Val(BEST), "#,###.##")
+    '    Next
+
+    'End Sub
+
+    Public Sub Promedio()
+        Try
+            ' Verificar si el diccionario no está vacío
+            If transactions.Count > 0 And CantRegistros > 0 Then
+                ' Calcular el total de los valores de summary
+                Dim Tot As Double = transactions.Values.Sum(Function(t) CDbl(t("summary")))
+
+                ' Calcular el promedio
+                Dim PROM As Double = Tot / CantRegistros
+
+                ' Actualizar el control de texto
+                TxtCant_Promedio.Text = "Lps " & Format(PROM, "#,###.##")
+            End If
+        Catch ex As Exception
+            ' Manejar las excepciones según sea necesario
+            Console.WriteLine($"Error: {ex.Message}")
+        End Try
+    End Sub
+
+    'Public Async Sub Promedio()
+
+    '    CargarCantRegistros()
+
+    '    Firebase()
+
+    '    Dim Qref As Query = db.Collection("Transactions")
+    '    Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+    '    Dim Tot As Integer
+
+    '    For Each docSnapshot As DocumentSnapshot In Snap.Documents
+    '        ' Acceder a los datos dentro de cada documento
+    '        Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+    '        ' Obtener idbank y namebank
+    '        Tot += data("summary")
+
+    '    Next
+
+    '    PROM = (Tot / CantRegistros)
+    '    TxtCant_Promedio.Text = "Lps " + Format(Val(PROM), "#,###.##")
+
+    'End Sub
+
+    Public Sub CargarCantRegistros()
+        Try
+            ' Verificar si el diccionario no está vacío
+            If transactions.Count > 0 Then
+                ' El número total de registros es el tamaño del diccionario
+                CantRegistros = transactions.Count
+            Else
+                ' Manejar el caso cuando no hay transacciones
+                CantRegistros = 0
+            End If
+        Catch ex As Exception
+            ' Manejar las excepciones según sea necesario
+            Console.WriteLine($"Error: {ex.Message}")
+        End Try
+    End Sub
+
+    'Public Async Sub CargarCantRegistros()
+
+    '    Firebase()
+
+    '    Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction").Limit(1)
+    '    Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+    '    If Snap.Documents.Count > 0 Then
+    '        Dim docSnapshot As DocumentSnapshot = Snap.Documents(0)
+
+    '        If docSnapshot.Exists Then
+    '            ' Access the data inside the document
+    '            Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+    '            ' Obtain idtransaction
+    '            CantRegistros = data("idtransaction")
+    '        End If
+    '    End If
+
+    'End Sub
+
+
+
+    Public Async Sub LlenarBancos()
+
+        Firebase() ' Obtener datos de Firebase
+
+        Dim Qref As Query = db.Collection("Banks").WhereEqualTo("status", "1").OrderBy("namebank")
+        Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+        ' Crear una lista para almacenar los nombres de los bancos
+        Dim bankNames As New List(Of String)
+
+        For Each docSnapshot As DocumentSnapshot In Snap.Documents
+            ' Acceder a los datos dentro de cada documento
+            Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+            ' Agregar el nombre del banco a la lista
+            bankNames.Add(data("namebank").ToString())
+        Next
+
+        ' Asignar la lista como origen de datos del ComboBox
+        BancoComboBox.DataSource = bankNames
+        BancoComboBox.SelectedIndex = 0
+
+    End Sub
+
+    Public Async Sub CargarIDBanco()
+
+        ' Obtener datos de Firebase
+        Firebase()
+        Dim Qref As Query = db.Collection("Banks").WhereEqualTo("namebank", BancoComboBox.Text)
+        Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+        If Snap.Documents.Count > 0 Then
+            Dim docSnapshot As DocumentSnapshot = Snap.Documents(0)
+
+            If docSnapshot.Exists Then
+                ' Access the data inside the document
+                Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+                IDBan = data("idbank")
+            End If
+        End If
+
+        '' al cargar los nombre de los bancos y los id, llamamos las cuentas
+        LlenarCuentas()
+
+    End Sub
+
+    Public Async Sub LlenarCuentas()
+
+        Firebase() ' Obtener datos de Firebase
+
+        Dim Qref As Query = db.Collection("Accounts").WhereEqualTo("idbank", IDBan).WhereEqualTo("status", "1").OrderBy("nameaccount")
+        Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+        ' Crear una lista para almacenar los nombres de los bancos
+        Dim accountNames As New List(Of String)
+
+        For Each docSnapshot As DocumentSnapshot In Snap.Documents
+            ' Acceder a los datos dentro de cada documento
+            Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+            ' Agregar el nombre del banco a la lista
+            accountNames.Add(data("nameaccount").ToString())
+        Next
+
+        ' Asignar la lista como origen de datos del ComboBox
+        DescripcionComboBox.DataSource = accountNames
+
+    End Sub
+
+    Public Async Sub CargarIDCuentas()
+
+        ' Obtener datos de Firebase
+        Firebase()
+        Dim Qref As Query = db.Collection("Accounts").WhereEqualTo("nameaccount", DescripcionComboBox.Text)
+        Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+        If Snap.Documents.Count > 0 Then
+            Dim docSnapshot As DocumentSnapshot = Snap.Documents(0)
+
+            If docSnapshot.Exists Then
+                ' Access the data inside the document
+                Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+                IDAcc = data("idaccount")
+            End If
+        End If
+
+    End Sub
+
+    Public Async Sub CargarMovimientos()
+
+        MovimientosDataGridView.DataSource = Nothing ' Limpiar datos existentes
+
+        Firebase() ' Obtener datos de Firebase
+
+        Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction").Limit(50)
+        Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+
+        ''cargo los bancos
+        ' Obtener todos los nombres de los bancos
+        Dim bankNames As New Dictionary(Of String, String)()
+
+        For Each docSnapshot As DocumentSnapshot In Snap.Documents
+            Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+            Dim bankId As String = data("idbank").ToString()
+
+            ' Verificar si ya hemos obtenido el nombre de este banco
+            If Not bankNames.ContainsKey(bankId) Then
+                Dim docRef As DocumentReference = db.Collection("Banks").Document(bankId)
+                Dim bankSnapshot As DocumentSnapshot = Await docRef.GetSnapshotAsync()
+
+                If bankSnapshot.Exists Then
+                    Dim bankData As Dictionary(Of String, Object) = bankSnapshot.ToDictionary()
+                    Dim bankName As String = bankData("namebank").ToString()
+                    bankNames.Add(bankId, bankName)
+                End If
+            End If
+        Next
+
+        ''cargo las cuentas
+        ' Obtener todos los nombres de los bancos
+        Dim accountNames As New Dictionary(Of String, String)()
+
+        For Each docSnapshot As DocumentSnapshot In Snap.Documents
+            Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+            Dim accountId As String = data("idaccount").ToString()
+
+            ' Verificar si ya hemos obtenido el nombre de este banco
+            If Not accountNames.ContainsKey(accountId) Then
+                Dim docRef As DocumentReference = db.Collection("Accounts").Document(accountId)
+                Dim accountSnapshot As DocumentSnapshot = Await docRef.GetSnapshotAsync()
+
+                If accountSnapshot.Exists Then
+                    Dim accountData As Dictionary(Of String, Object) = accountSnapshot.ToDictionary()
+                    Dim accountName As String = accountData("nameaccount").ToString()
+                    accountNames.Add(accountId, accountName)
+                End If
+            End If
+        Next
+
+        ' Limpiar las columnas existentes
+        MovimientosDataGridView.Columns.Clear()
+
+        ' Agregar columnas al DataGridView si aún no están presentes
+        MovimientosDataGridView.Columns.Add("idtransactioncolumn", "ID Transaction")
+        MovimientosDataGridView.Columns.Add("idbankcolumn", "ID Bank")
+        MovimientosDataGridView.Columns.Add("namebankcolumn", "Name Bank")
+        MovimientosDataGridView.Columns.Add("typecolumn", "Type")
+        MovimientosDataGridView.Columns.Add("datecolumn", "Date")
+        MovimientosDataGridView.Columns.Add("detailscolumn", "Details")
+        MovimientosDataGridView.Columns.Add("idaccountcolumn", "ID Account")
+        MovimientosDataGridView.Columns.Add("nameaccountcolumn", "Name Account")
+        MovimientosDataGridView.Columns.Add("amountcolumn", "Amount")
+        MovimientosDataGridView.Columns.Add("summarycolumn", "Summary")
+        ' Agrega más columnas si es necesario
+
+        For Each docSnapshot As DocumentSnapshot In Snap.Documents
+            ' Acceder a los datos dentro de cada documento
+            Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+            ''busco en la lista de bancos creadas, y le mando el objeto a buscar
+            Dim bankName As String = bankNames(data("idbank").ToString())
+            Dim accountName As String = accountNames(data("idaccount").ToString())
+
+            ' Suponiendo que "date" es el nombre del campo donde está almacenado el timestamp en Firebase
+            Dim timestamp As Google.Cloud.Firestore.Timestamp = data("date")
+            Dim fecha As DateTime = timestamp.ToDateTime()
+
+            ' Convertir la fecha a formato local de EE. UU.
+            Dim fechaUSA As DateTime = fecha.ToLocalTime()
+
+            ' Formatear la fecha en formato de cadena de EE. UU.
+            'Dim fechaUSAString As String = fechaUSA.ToString("MM/dd/yyyy hh:mm:ss tt", CultureInfo.InvariantCulture)
+            Dim fechaUSAString As String = fechaUSA.ToString("dddd, dd MMMM yyyy hh:mm:ss tt", CultureInfo.InvariantCulture)
+
+
+            ' Agregar los datos al DataGridView
+            MovimientosDataGridView.Rows.Add(data("idtransaction"), data("idbank"), bankName, data("type"), fechaUSAString, data("details"), data("idaccount"), accountName, Format(Val(data("amount")), "#,###.##"), Format(Val(data("summary")), "#,###.##")) '' Agrega los campos que desees mostrar
+        Next
+
+        MovimientosDataGridView.Refresh()
+
+    End Sub
+
+    Public Async Sub Guardar()
+
+        CargarID()
+
+        If MsgBox("Confirm", MsgBoxStyle.Question + MessageBoxButtons.YesNo) = MsgBoxResult.Yes Then
+
+            ' Inicializa Firestore
+            Firebase()
+
+            ' Recorre cada fila del DataGridView
+
+            ' Obtiene el ID del banco de la fila actual
+            Dim fecha As Date = Convert.ToDateTime(Now).ToUniversalTime()
+
+            ' Verifica si ya existe un documento con el mismo ID
+            Dim docRef = db.Collection("Transactions").Document(IDAHORRO.ToString)
+            Dim docSnapshot = Await docRef.GetSnapshotAsync()
+
+            ' Verifica si el documento ya existe
+            If docSnapshot.Exists Then
+                '' Si el documento ya existe, actualiza sus datos
+                Dim datos As New Dictionary(Of String, Object) From {
+                    {"idbank", IDBan},
+                    {"details", Convert.ToString(ReferenciaTextBox.Text)},
+                    {"idaccount", Convert.ToInt32(IDAcc)}
+                }
+
+                Await docRef.SetAsync(datos, SetOptions.MergeAll)
+                MessageBox.Show("Update item successfully")
+            Else
+                ' Si el documento no existe, crea uno nuevo
+                Dim datos As New Dictionary(Of String, Object) From {
+                    {"idtransaction", IDAHORRO},
+                    {"idbank", Convert.ToInt32(IDBan)},
+                    {"type", Convert.ToString(TIPO)},
+                    {"date", fecha},
+                    {"details", Convert.ToString(ReferenciaTextBox.Text)},
+                    {"idaccount", Convert.ToInt32(IDAcc)},
+                    {"amount", Convert.ToDouble(DepositoTextBox.Text)},
+                    {"summary", Convert.ToDouble(TotalTextBox.Text)}
+                }
+
+                Await db.Collection("Transactions").Document(IDAHORRO.ToString).SetAsync(datos)
+                MessageBox.Show("Item has been created successfully")
+            End If
+
+        End If
+
+        LoadMapas()
+        LoadForm()
+
+    End Sub
+
+    Public Async Sub CargarID()
+
+        If IDAHORRO = 0 Then
+            Firebase()
+
+            Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction").Limit(1)
+            Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+            If Snap.Documents.Count > 0 Then
+                Dim docSnapshot As DocumentSnapshot = Snap.Documents(0)
+
+                If docSnapshot.Exists Then
+                    ' Access the data inside the document
+                    Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+                    ' Obtener idbank y namebank
+                    IDAHORRO = data("idtransaction") + 1
+                End If
+            End If
+        End If
+
+    End Sub
+
+    Private Sub RB_DEPOSITO_CheckedChanged(sender As Object, e As EventArgs) Handles RB_DEPOSITO.CheckedChanged
+
+        TIPO = "DEPOSIT"
+
+    End Sub
+
+    Private Sub RB_RETIRO_CheckedChanged(sender As Object, e As EventArgs) Handles RB_RETIRO.CheckedChanged
+
+        TIPO = "WITHDRAWAL"
+
+    End Sub
+
+    Private Sub PictureBox1_Click(sender As Object, e As EventArgs) Handles PictureBox1.Click
+
+        Close()
+
+    End Sub
+
+    Private Sub Label4_Click(sender As Object, e As EventArgs) Handles TxtSave.Click
+
+        Guardar()
+
+    End Sub
+
+    Private Sub MovimientosDataGridView_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles MovimientosDataGridView.CellContentClick
+
+        Try
+            Dim index As Integer
+            index = e.RowIndex
+            Dim selectedRow As DataGridViewRow
+            selectedRow = MovimientosDataGridView.Rows(index)
+
+            IDAHORRO = selectedRow.Cells(0).Value
+            BancoComboBox.Text = selectedRow.Cells(2).Value
+            TIPO = selectedRow.Cells(3).Value.ToString
+            If TIPO = "DEPOSIT" Then
+                RB_DEPOSITO.Checked = True
+            Else
+                RB_RETIRO.Checked = True
+            End If
+            LblDate.Text = selectedRow.Cells(4).Value
+            ReferenciaTextBox.Text = selectedRow.Cells(5).Value.ToString
+            DescripcionComboBox.Text = selectedRow.Cells(7).Value
+            DepositoTextBox.Text = selectedRow.Cells(10).Value
+            TotalTextBox.Text = Format(selectedRow.Cells(11).Value, "#,###.##")
+        Catch ex As Exception
+        End Try
+
+    End Sub
+
+    Private Sub DepositoTextBox_TextChanged(sender As Object, e As EventArgs) Handles DepositoTextBox.TextChanged
+
+        TotalTextBox.Text = Format(TOT + Val(DepositoTextBox.Text), "#,###.##")
+        CANT = TOT + Val(DepositoTextBox.Text)
+
+        If Val(DepositoTextBox.Text) > 0 Then
+            RB_DEPOSITO.Checked = True
+        Else
+            RB_RETIRO.Checked = True
+        End If
+
+    End Sub
+
+    Private Sub PictureBox5_Click(sender As Object, e As EventArgs)
+
+        LoadForm()
+
+    End Sub
+
+    Private Sub DepositoTextBox_Click(sender As Object, e As EventArgs) Handles DepositoTextBox.Click
+
+        DepositoTextBox.Text = ""
+
+    End Sub
+
+    Private Sub Timer1_Tick(sender As Object, e As EventArgs) Handles Timer1.Tick
+
+        If IDAHORRO >= 1 Then
+        Else
+            LblDate.Text = Now
+        End If
+
+    End Sub
+
+    Private Sub ReferenciaTextBox_Click(sender As Object, e As EventArgs) Handles ReferenciaTextBox.Click
+
+        ReferenciaTextBox.Text = ""
+
+    End Sub
+
+    Private Sub ReferenciaTextBox_MouseLeave(sender As Object, e As EventArgs) Handles ReferenciaTextBox.MouseLeave
+
+        If ReferenciaTextBox.Text = "" Then
+            ReferenciaTextBox.Text = "NINGUNA"
+        End If
+
+    End Sub
+
+    Private Sub RectangleShape5_Click(sender As Object, e As EventArgs) Handles GuardarMov.Click
+
+        Guardar()
+
+    End Sub
+
+    Private Sub PictureBox2_Click(sender As Object, e As EventArgs) Handles PictureBox2.Click
+
+        LoadMapas()
+        LoadForm()
+
+    End Sub
+
+    Private Sub PictureBox3_Click(sender As Object, e As EventArgs) Handles Cmb_Delete.Click
+
+        If MsgBox("Delete?", MsgBoxStyle.Question + MessageBoxButtons.YesNo) = MsgBoxResult.Yes Then
+
+            If IDAHORRO > 1 Then
+                cn.Open()
+                cmd = New SqlCommand("SELECT TOP(1) [idahorro]
+                                FROM [AHORROS].[dbo].[Movimientos]
+                                WHERE idahorro = " & IDAHORRO & "
+                                ORDER BY [idahorro] DESC") With {
+            .Connection = cn,
+            .CommandType = CommandType.Text
+        }
+                dr = cmd.ExecuteReader()
+
+                If dr.Read <> vbNull Then
+
+                    Using cn As New SqlConnection(My.Settings.AHORROSConnectionString)
+                        cn.Open()
+                        sql = " DELETE FROM [dbo].[Movimientos]
+		                        WHERE idahorro = @idahorro"
+
+                        cmd = New SqlCommand(sql, cn) With {
+                    .CommandText = "InsertMovimiento",
+                    .CommandType = CommandType.StoredProcedure
+                }
+                        cmd.Parameters.Clear()
+                        cmd.Parameters.AddWithValue("trans", "D")
+                        cmd.Parameters.AddWithValue("idahorro", IDAHORRO)
+                        cmd.Parameters.AddWithValue("idbanco", IDBan)
+                        cmd.Parameters.AddWithValue("tipo", TIPO)
+                        cmd.Parameters.AddWithValue("referencia", ReferenciaTextBox.Text)
+                        cmd.Parameters.AddWithValue("fecha", Convert.ToDateTime(LblDate.Text))
+                        cmd.Parameters.AddWithValue("idcuenta", IDAcc)
+                        cmd.Parameters.AddWithValue("deposito", DepositoTextBox.Text)
+                        cmd.Parameters.AddWithValue("total", TOT)
+                        cmd.ExecuteNonQuery()
+                        cn.Close()
+                    End Using
+
+                    dr.Close()
+                    cn.Close()
+
+                    LoadForm()
+
+                End If
+
+            Else
+                MessageBox.Show("No record selected")
+            End If
+
+        End If
+
+    End Sub
+
+    Private Sub BancoComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles BancoComboBox.SelectedIndexChanged
+
+        CargarIDBanco()
+        LlenarCuentas()
+
+    End Sub
+
+    Private Sub DescripcionComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles DescripcionComboBox.SelectedIndexChanged
+
+        CargarIDCuentas()
+
+    End Sub
+
+    Private Sub PictureBox3_Click_1(sender As Object, e As EventArgs) Handles PictureBox3.Click
+
+        If FormBancosCuentas.Visible = True Then
+            FormBancosCuentas.Hide()
+        Else
+            FormBancosCuentas.CargarBancos()
+            FormBancosCuentas.CargarCuentas()
+            FormBancosCuentas.Show()
+        End If
+
+    End Sub
+
+    Private Sub PictureBox4_Click(sender As Object, e As EventArgs) Handles PictureBox4.Click
+
+        If FormSaldosBancos.Visible = True Then
+            FormSaldosBancos.Timer1.Stop()
+            FormSaldosBancos.Hide()
+            LoadA = 0
+        Else
+            LoadA = 1
+            FormSaldosBancos.Timer1.Start()
+            FormSaldosBancos.Show()
+        End If
+
+    End Sub
+
+    Private Sub TxtBuscar_Click(sender As Object, e As EventArgs) Handles TxtBuscar.Click
+
+        TxtBuscar.Text = ""
+
+    End Sub
+
+    Private Sub TxtBuscar_MouseLeave(sender As Object, e As EventArgs) Handles TxtBuscar.MouseLeave
+
+        If TxtBuscar.Text = "" Then
+            TxtBuscar.Text = "Search..."
+            CargarMovimientos()
+        End If
+
+    End Sub
+
+    Private Sub TxtBuscar_TextChanged(sender As Object, e As EventArgs) Handles TxtBuscar.TextChanged
+
+        If (TxtBuscar.Text = "" Or TxtBuscar.Text = "Search...") Then
+            CargarMovimientos()
+        Else
+            obj.SEARCHDESCRIPTION(TxtBuscar.Text, MovimientosDataGridView)
+        End If
+
+    End Sub
+
+    Private Sub RB_TRANSFERENCIA_CheckedChanged(sender As Object, e As EventArgs) Handles RB_TRANSFERENCIA.CheckedChanged
+
+        TIPO = "TRANSFER"
+
+    End Sub
+
+    Private Sub CMD_UFB_T_Click(sender As Object, e As EventArgs) Handles CMD_UFB_T.Click
+        CargarTransactionFB()
+    End Sub
+
+    Public Async Sub CargarTransactionFB()
+
+        If MovimientosDataGridView.Rows.Count = 0 Then
+            Return
+        End If
+
+        ' Inicializa Firestore
+        Firebase()
+
+        ' Recorre cada fila del DataGridView
+        For Each row As DataGridViewRow In MovimientosDataGridView.Rows
+
+            ' Obtiene el ID del banco de la fila actual
+            Dim idtransaction As Int32 = Convert.ToInt32(row.Cells(0).Value)
+            Dim fecha As Date = Convert.ToDateTime(row.Cells(4).Value).ToUniversalTime()
+
+            ' Verifica si ya existe un documento con el mismo ID
+            Dim docRef = db.Collection("Transactions").Document(idtransaction.ToString)
+            Dim docSnapshot = Await docRef.GetSnapshotAsync()
+
+            ' Verifica si el documento ya existe
+            If docSnapshot.Exists Then
+                '' Si el documento ya existe, actualiza sus datos
+                Dim datos As New Dictionary(Of String, Object) From {
+                    {"idbank", Convert.ToInt32(row.Cells(1).Value)},
+                    {"type", Convert.ToString(row.Cells(3).Value)},
+                    {"date", fecha},
+                    {"details", Convert.ToString(row.Cells(5).Value)},
+                    {"idaccount", Convert.ToInt32(row.Cells(6).Value)}
+                }
+
+                Await docRef.SetAsync(datos, SetOptions.MergeAll)
+                MessageBox.Show("Update item successfully")
+            Else
+                ' Si el documento no existe, crea uno nuevo
+                Dim datos As New Dictionary(Of String, Object) From {
+                    {"idtransaction", idtransaction},
+                    {"idbank", Convert.ToInt32(row.Cells(1).Value)},
+                    {"type", Convert.ToString(row.Cells(3).Value)},
+                    {"date", fecha},
+                    {"details", Convert.ToString(row.Cells(5).Value)},
+                    {"idaccount", Convert.ToInt32(row.Cells(6).Value)},
+                    {"amount", Convert.ToDouble(row.Cells(8).Value)},
+                    {"summary", Convert.ToDouble(row.Cells(9).Value)}
+                }
+
+                Await db.Collection("Transactions").Document(idtransaction.ToString).SetAsync(datos)
+                MessageBox.Show("Item has been created successfully")
+            End If
+        Next
+    End Sub
+
+End Class
