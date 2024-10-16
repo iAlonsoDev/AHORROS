@@ -1473,7 +1473,7 @@ Public Class FormMovimientos
 
         Firebase() ' Obtener datos de Firebase
 
-        Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction").Limit(250)
+        Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction").Limit(50)
         Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
 
 
