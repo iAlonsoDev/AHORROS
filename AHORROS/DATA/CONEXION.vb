@@ -26,7 +26,6 @@ Public Module CONEXION
     '' variables de FORM BANCOSCUENTAS
     Public IDBC, IDCB, IDAHORRO, CantRegistros As Integer
 
-
     '' variables disparadoras
     Public LoadA As Integer
 
