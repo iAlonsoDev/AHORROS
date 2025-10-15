@@ -297,7 +297,7 @@ Partial Class FormMovimientos
         Me.MovimientosDataGridView.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing
         Me.MovimientosDataGridView.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.MovimientosDataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
-        Me.MovimientosDataGridView.Size = New System.Drawing.Size(1698, 349)
+        Me.MovimientosDataGridView.Size = New System.Drawing.Size(1113, 349)
         Me.MovimientosDataGridView.TabIndex = 1000
         Me.MovimientosDataGridView.TabStop = False
         '
@@ -406,8 +406,8 @@ Partial Class FormMovimientos
         Me.ShapeContainer2.Location = New System.Drawing.Point(0, 0)
         Me.ShapeContainer2.Margin = New System.Windows.Forms.Padding(0)
         Me.ShapeContainer2.Name = "ShapeContainer2"
-        Me.ShapeContainer2.Shapes.AddRange(New Microsoft.VisualBasic.PowerPacks.Shape() {Me.RectangleShape13, Me.RectangleShape5, Me.LineShape2, Me.RectangleShape11, Me.RectangleShape10, Me.LineShape1, Me.RectangleShape9, Me.RectangleShape8, Me.RectangleShape7, Me.GuardarMov, Me.RectangleShape4, Me.RectangleShape3, Me.RectangleShape2, Me.RectangleShape1, Me.RectangleShape6, Me.RectangleShape12})
-        Me.ShapeContainer2.Size = New System.Drawing.Size(2305, 1095)
+        Me.ShapeContainer2.Shapes.AddRange(New Microsoft.VisualBasic.PowerPacks.Shape() {Me.RectangleShape5, Me.LineShape2, Me.RectangleShape11, Me.RectangleShape10, Me.LineShape1, Me.RectangleShape9, Me.RectangleShape8, Me.RectangleShape7, Me.GuardarMov, Me.RectangleShape4, Me.RectangleShape3, Me.RectangleShape2, Me.RectangleShape1, Me.RectangleShape6, Me.RectangleShape12, Me.RectangleShape13})
+        Me.ShapeContainer2.Size = New System.Drawing.Size(1720, 1095)
         Me.ShapeContainer2.TabIndex = 26
         Me.ShapeContainer2.TabStop = False
         '
@@ -472,7 +472,7 @@ Partial Class FormMovimientos
         Me.RectangleShape10.Enabled = False
         Me.RectangleShape10.Location = New System.Drawing.Point(470, 190)
         Me.RectangleShape10.Name = "RectangleShape10"
-        Me.RectangleShape10.Size = New System.Drawing.Size(1798, 436)
+        Me.RectangleShape10.Size = New System.Drawing.Size(1213, 436)
         '
         'LineShape1
         '
@@ -516,7 +516,7 @@ Partial Class FormMovimientos
         Me.RectangleShape7.Enabled = False
         Me.RectangleShape7.Location = New System.Drawing.Point(82, 651)
         Me.RectangleShape7.Name = "RectangleShape7"
-        Me.RectangleShape7.Size = New System.Drawing.Size(2185, 394)
+        Me.RectangleShape7.Size = New System.Drawing.Size(1600, 394)
         '
         'GuardarMov
         '
@@ -773,7 +773,7 @@ Partial Class FormMovimientos
         Series1.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.[Double]
         Series1.YValuesPerPoint = 10
         Me.ChartTotCuenta.Series.Add(Series1)
-        Me.ChartTotCuenta.Size = New System.Drawing.Size(1742, 391)
+        Me.ChartTotCuenta.Size = New System.Drawing.Size(1157, 391)
         Me.ChartTotCuenta.TabIndex = 33
         Me.ChartTotCuenta.TextAntiAliasingQuality = System.Windows.Forms.DataVisualization.Charting.TextAntiAliasingQuality.SystemDefault
         '
@@ -994,7 +994,7 @@ Partial Class FormMovimientos
         ChartArea2.Name = "ChartArea1"
         ChartArea2.ShadowColor = System.Drawing.Color.Transparent
         Me.ChartTotBancos.ChartAreas.Add(ChartArea2)
-        Me.ChartTotBancos.Location = New System.Drawing.Point(1830, 677)
+        Me.ChartTotBancos.Location = New System.Drawing.Point(1245, 677)
         Me.ChartTotBancos.Name = "ChartTotBancos"
         Me.ChartTotBancos.Palette = System.Windows.Forms.DataVisualization.Charting.ChartColorPalette.Pastel
         Series2.BackImageAlignment = System.Windows.Forms.DataVisualization.Charting.ChartImageAlignmentStyle.Right
@@ -1182,7 +1182,7 @@ Partial Class FormMovimientos
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.SystemColors.MenuBar
-        Me.ClientSize = New System.Drawing.Size(2305, 1095)
+        Me.ClientSize = New System.Drawing.Size(1720, 1095)
         Me.Controls.Add(Me.Label1)
         Me.Controls.Add(Me.ProgressBar1)
         Me.Controls.Add(Me.txtPorA)

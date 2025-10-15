@@ -5,9 +5,14 @@ Imports Google.Cloud.Firestore
 
 Public Class FormBancosCuentas
 
+
+    Private Sub FormBancosCuentas_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        LoadBancosCuentas()
+    End Sub
+
     Sub LoadBancosCuentas()
 
-        Idbancos.Text = ""
+        Idbanco.Text = ""
         NombreBancos.Text = ""
         EstadoBancos.SelectedItem = "1"
 
@@ -19,6 +24,9 @@ Public Class FormBancosCuentas
         CargarBancos()
         CargarCuentas()
 
+        LlenarBancos()
+        CargarNewIdBanco()
+        CargarNewIdCuenta()
     End Sub
 
     Public Sub CargarBancos()
@@ -227,7 +235,7 @@ Public Class FormBancosCuentas
             cn.Open()
             cmd = New SqlCommand("SELECT [idbanco]
                               FROM [dbo].[Bancos]
-                              WHERE [idbanco] = " + Idbancos.Text + "") With {
+                              WHERE [idbanco] = " + Idbanco.Text + "") With {
                                             .Connection = cn,
                                             .CommandType = CommandType.Text
                                         }
@@ -252,7 +260,7 @@ Public Class FormBancosCuentas
                     cmd.Parameters.AddWithValue("trans", "U")
                     cmd.Parameters.AddWithValue("nombre", NombreBancos.Text)
                     cmd.Parameters.AddWithValue("estado", EstadoBancos.SelectedItem.ToString)
-                    cmd.Parameters.AddWithValue("idbanco", Idbancos.Text)
+                    cmd.Parameters.AddWithValue("idbanco", Idbanco.Text)
                     cmd.ExecuteNonQuery()
                     cn.Close()
                 End Using
@@ -275,7 +283,7 @@ Public Class FormBancosCuentas
             }
                     cmd.Parameters.Clear()
                     cmd.Parameters.AddWithValue("trans", "I")
-                    cmd.Parameters.AddWithValue("idbanco", Idbancos.Text)
+                    cmd.Parameters.AddWithValue("idbanco", Idbanco.Text)
                     cmd.Parameters.AddWithValue("nombre", NombreBancos.Text)
                     cmd.Parameters.AddWithValue("estado", EstadoBancos.SelectedItem.ToString)
                     cmd.ExecuteNonQuery()
@@ -288,6 +296,9 @@ Public Class FormBancosCuentas
             cn.Close()
 
             LoadBancosCuentas()
+            LlenarBancos()
+            CargarNewIdBanco()
+            CargarNewIdCuenta()
         End If
     End Sub
 
@@ -408,6 +419,9 @@ Public Class FormBancosCuentas
             cn.Close()
 
             LoadBancosCuentas()
+            LlenarBancos()
+            CargarNewIdBanco()
+            CargarNewIdCuenta()
 
         End If
     End Sub
@@ -432,7 +446,7 @@ Public Class FormBancosCuentas
             Dim selectedRow As DataGridViewRow
             selectedRow = BancosDataGridView.Rows(index)
 
-            Idbancos.Text = selectedRow.Cells(0).Value
+            Idbanco.Text = selectedRow.Cells(0).Value
             NombreBancos.Text = selectedRow.Cells(1).Value
             EstadoBancos.SelectedItem = selectedRow.Cells(2).Value.ToString
         Catch ex As Exception
@@ -454,9 +468,6 @@ Public Class FormBancosCuentas
         End Try
     End Sub
 
-    Private Sub FormBancosCuentas_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        LoadBancosCuentas()
-    End Sub
 
     Private Sub Button3_Click(sender As Object, e As EventArgs) Handles CMD_UFB_B.Click
         CargarBancosFB()
@@ -555,5 +566,185 @@ Public Class FormBancosCuentas
 
         MessageBox.Show("Datos cargados en Firestore.")
     End Sub
+
+    Public Sub LlenarBancos()
+
+        'Firebase() ' Obtener datos de Firebase
+
+        'Dim Qref As Query = db.Collection("Banks").WhereEqualTo("status", "1").OrderBy("namebank")
+        'Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+        '' Crear una lista para almacenar los nombres de los bancos
+        'Dim bankNames As New List(Of String)
+
+        'For Each docSnapshot As DocumentSnapshot In Snap.Documents
+        '    ' Acceder a los datos dentro de cada documento
+        '    Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+        '    ' Agregar el nombre del banco a la lista
+        '    bankNames.Add(data("namebank").ToString())
+        'Next
+
+        '' Asignar la lista como origen de datos del ComboBox
+        'BancoComboBox.DataSource = bankNames
+        'BancoComboBox.SelectedIndex = 0
+
+
+        ''BancosDataGridView.Refresh()
+
+        sql = "SELECT [idbanco]
+         ,[nombre]
+        FROM [AHORROS].[dbo].[Bancos] WHERE estado = '1'
+        Order by nombre asc"
+        da = New SqlDataAdapter(sql, cn)
+        ds = New DataSet
+        da.Fill(ds)
+
+        BancoComboBox.DataSource = ds.Tables(0)
+        BancoComboBox.DisplayMember = "Nombre"
+
+    End Sub
+
+
+
+    Public Sub CargarIDBanco()
+
+        '' Obtener datos de Firebase
+        'Firebase()
+        'Dim Qref As Query = db.Collection("Banks").WhereEqualTo("namebank", BancoComboBox.Text)
+        'Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+        ''For Each docSnapshot As DocumentSnapshot In Snap.Documents
+        ''    ' Acceder a los datos dentro de cada documento
+        ''    Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+        ''    ' Obtener idbank y namebank
+        ''    IDBan = data("idbank")
+        ''Next
+
+
+        'If Snap.Documents.Count > 0 Then
+        '    Dim docSnapshot As DocumentSnapshot = Snap.Documents(0)
+
+        '    If docSnapshot.Exists Then
+        '        ' Access the data inside the document
+        '        Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+        '        IDBan = data("idbank")
+        '    End If
+        'End If
+
+
+        cn.Open()
+        cmd = New SqlCommand("SELECT [idbanco]
+                              FROM [AHORROS].[dbo].[Bancos]
+                              WHERE [nombre] = '" + BancoComboBox.Text + "'") With {
+            .Connection = cn,
+            .CommandType = CommandType.Text
+        }
+        dr = cmd.ExecuteReader()
+        If dr.Read Then
+            IdbancoCuenta.Text = dr.Item("idbanco")
+        End If
+
+        dr.Close()
+        cn.Close()
+
+    End Sub
+
+    Private Sub BancoComboBox_SelectedIndexChanged(sender As Object, e As EventArgs) Handles BancoComboBox.SelectedIndexChanged
+        CargarIDBanco()
+    End Sub
+
+
+    Public Sub CargarNewIdBanco()
+
+        '' Obtener datos de Firebase
+        'Firebase()
+        'Dim Qref As Query = db.Collection("Banks").WhereEqualTo("namebank", BancoComboBox.Text)
+        'Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+        ''For Each docSnapshot As DocumentSnapshot In Snap.Documents
+        ''    ' Acceder a los datos dentro de cada documento
+        ''    Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+        ''    ' Obtener idbank y namebank
+        ''    IDBan = data("idbank")
+        ''Next
+
+
+        'If Snap.Documents.Count > 0 Then
+        '    Dim docSnapshot As DocumentSnapshot = Snap.Documents(0)
+
+        '    If docSnapshot.Exists Then
+        '        ' Access the data inside the document
+        '        Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+        '        IDBan = data("idbank")
+        '    End If
+        'End If
+
+
+        cn.Open()
+        cmd = New SqlCommand("select top(1) idbanco + 1 as idbanco from Bancos
+                              order by idbanco desc") With {
+            .Connection = cn,
+            .CommandType = CommandType.Text
+        }
+        dr = cmd.ExecuteReader()
+        If dr.Read Then
+            Idbanco.Text = dr.Item("idbanco")
+        End If
+
+        dr.Close()
+        cn.Close()
+
+    End Sub
+
+    Public Sub CargarNewIdCuenta()
+
+        '' Obtener datos de Firebase
+        'Firebase()
+        'Dim Qref As Query = db.Collection("Banks").WhereEqualTo("namebank", BancoComboBox.Text)
+        'Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
+
+        ''For Each docSnapshot As DocumentSnapshot In Snap.Documents
+        ''    ' Acceder a los datos dentro de cada documento
+        ''    Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+        ''    ' Obtener idbank y namebank
+        ''    IDBan = data("idbank")
+        ''Next
+
+
+        'If Snap.Documents.Count > 0 Then
+        '    Dim docSnapshot As DocumentSnapshot = Snap.Documents(0)
+
+        '    If docSnapshot.Exists Then
+        '        ' Access the data inside the document
+        '        Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
+
+        '        IDBan = data("idbank")
+        '    End If
+        'End If
+
+
+        cn.Open()
+        cmd = New SqlCommand("SELECT top(1) [idcuenta] + 1 as idcuenta
+                              FROM [AHORROS].[dbo].[Cuentas]
+                              order by idcuenta desc") With {
+            .Connection = cn,
+            .CommandType = CommandType.Text
+        }
+        dr = cmd.ExecuteReader()
+        If dr.Read Then
+            Idcuenta.Text = dr.Item("idcuenta")
+        End If
+
+        dr.Close()
+        cn.Close()
+
+    End Sub
+
 
 End Class

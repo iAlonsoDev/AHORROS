@@ -17,12 +17,14 @@ Public Class FormMovimientos
         ' LAS TRANSACCIONES REALIZADAS DESDE MI APPLICACION DE FLUTTER CON FIREBASE SE DESCARGARAN Y SE SUBIRAN A SQL SERVER,
         ' PARA SINCRONIZAR LA INFORMACION ENTRE MI APP FLUTTER Y MI APP VB.NET
         ' se probo con conexion full a firebase pero el consumo de datos era demasiado, la cuota de google
-        If MsgBox("Load data to SQLServer?", MsgBoxStyle.Question + MessageBoxButtons.YesNo) = MsgBoxResult.Yes Then
+        If MsgBox("Load data to SQLServer from Firebase?", MsgBoxStyle.Question + MessageBoxButtons.YesNo) = MsgBoxResult.Yes Then
             DownloadFirebase()
             LoadForm()
         Else
             LoadForm()
         End If
+        'DownloadFirebase()
+
     End Sub
 
     Public Sub LoadForm()
@@ -124,7 +126,7 @@ Public Class FormMovimientos
                         from(
                         select x.*,
                         str(((balance / best)-1) * 100) ++ '%'  porc,
-                        round(((balance / best)-1) * 100, 2) valor
+                        ((balance / best)-1) * 100 valor
                         from 
                         (SELECT 
                         MAX(total) best,
@@ -243,7 +245,7 @@ Public Class FormMovimientos
         dr = cmd.ExecuteReader()
 
         While (dr.Read)
-            Amount.Add(dr.GetDouble(0))
+            Amount.Add(dr.GetDecimal(0))
             Bank.Add(dr.GetString(2))
             Desciption.Add(dr.GetString(1))
             ChartTotCuenta.Series(0).Points.DataBindXY(Desciption, Amount)
@@ -322,7 +324,7 @@ Public Class FormMovimientos
         dr = cmd.ExecuteReader()
 
         While (dr.Read)
-            Amount2.Add(dr.GetDouble(0))
+            Amount2.Add(dr.GetDecimal(0))
             Bank2.Add(dr.GetString(2))
             Desciption2.Add(dr.GetString(1))
             ChartTotBancos.Series(0).Points.DataBindXY(Desciption2, Amount2)
@@ -426,11 +428,11 @@ Public Class FormMovimientos
 
 
         cn.Open()
-        cmd = New SqlCommand("SELECT        TOP (1) SUM(dbo.Movimientos.deposito) AS Amount, dbo.Bancos.nombre + ' - ' + dbo.Cuentas.cuenta AS Description
+        cmd = New SqlCommand("SELECT        TOP (1) SUM(dbo.Movimientos.deposito) AS Amount, dbo.Bancos.nombre AS Description
                                 FROM            dbo.Bancos INNER JOIN
                                                          dbo.Movimientos ON dbo.Bancos.idbanco = dbo.Movimientos.idbanco INNER JOIN
                                                          dbo.Cuentas ON dbo.Movimientos.idcuenta = dbo.Cuentas.idcuenta
-                                GROUP BY dbo.Bancos.nombre, dbo.Cuentas.cuenta
+                                GROUP BY dbo.Bancos.nombre
                                 ORDER BY Amount DESC") With {
             .Connection = cn,
             .CommandType = CommandType.Text
@@ -608,7 +610,7 @@ Public Class FormMovimientos
 
         ''BancosDataGridView.Refresh()
 
-        sql = "SELECT TOP (1000) [idbanco]
+        sql = "SELECT [idbanco]
          ,[nombre]
         FROM [AHORROS].[dbo].[Bancos] WHERE estado = '1'
         Order by nombre asc"
@@ -728,7 +730,7 @@ Public Class FormMovimientos
 
         ''DescripcionComboBox.SelectedIndex = 0
 
-        sql = "SELECT        TOP (10) Cuentas.idcuenta, Cuentas.cuenta
+        sql = "SELECT  Cuentas.idcuenta, Cuentas.cuenta
                 FROM            Cuentas INNER JOIN
                 Bancos ON Cuentas.idbanco = Bancos.idbanco
                 WHERE Cuentas.estado = '1' AND Bancos.nombre = '" + BancoComboBox.Text + "'
@@ -917,7 +919,7 @@ Public Class FormMovimientos
         MovimientosDataGridView.Refresh()
 
 
-        sql = "SELECT top(50) dbo.Movimientos.idahorro idtransaction, 
+        sql = "SELECT top(100) dbo.Movimientos.idahorro idtransaction, 
                                 dbo.Bancos.idbanco idbank, 
                                 dbo.Bancos.nombre AS bankname, 
                                 dbo.Movimientos.tipo as type, 
@@ -948,85 +950,84 @@ Public Class FormMovimientos
         '                        dbo.Cuentas ON dbo.Movimientos.idcuenta = dbo.Cuentas.idcuenta
         '        ORDER BY dbo.Movimientos.idahorro DESC"
 
-        Try
-            cn.Open()
+
+        cn.Open()
             cmd = New SqlCommand(sql, cn)
             da = New SqlDataAdapter(cmd)
             dt = New DataTable
             da.Fill(dt)
             MovimientosDataGridView.DataSource = dt
-        Catch
-        Finally
-            cn.Close()
-        End Try
+
+        cn.Close()
 
     End Sub
 
     Public Sub Guardar()
 
-        CargarID()
+        If ReferenciaTextBox.Text = "" Then
+            ReferenciaTextBox.Focus()
+            MessageBox.Show("Se debe agregar descripcion")
+        Else
 
-        If MsgBox("Confirm", MsgBoxStyle.Question + MessageBoxButtons.YesNo) = MsgBoxResult.Yes Then
+            If MsgBox("Confirm", MsgBoxStyle.Question + MessageBoxButtons.YesNo) = MsgBoxResult.Yes Then
+
+                CargarID()
+
+                '' Inicializa Firestore
+                'Firebase()
+
+                '' Recorre cada fila del DataGridView
+
+                '' Obtiene el ID del banco de la fila actual
+                'Dim fecha As Date = Convert.ToDateTime(Now).ToUniversalTime()
+
+                '' Verifica si ya existe un documento con el mismo ID
+                'Dim docRef = db.Collection("Transactions").Document(IDAHORRO.ToString)
+                'Dim docSnapshot = Await docRef.GetSnapshotAsync()
+
+                '' Verifica si el documento ya existe
+                'If docSnapshot.Exists Then
+                '    '' Si el documento ya existe, actualiza sus datos
+                '    Dim datos As New Dictionary(Of String, Object) From {
+                '        {"idbank", IDBan},
+                '        {"details", Convert.ToString(ReferenciaTextBox.Text)},
+                '        {"idaccount", Convert.ToInt32(IDAcc)}
+                '    }
+
+                '    Await docRef.SetAsync(datos, SetOptions.MergeAll)
+                '    MessageBox.Show("Update item successfully")
+                'Else
+                '    ' Si el documento no existe, crea uno nuevo
+                '    Dim datos As New Dictionary(Of String, Object) From {
+                '        {"idtransaction", IDAHORRO},
+                '        {"idbank", Convert.ToInt32(IDBan)},
+                '        {"type", Convert.ToString(TIPO)},
+                '        {"date", fecha},
+                '        {"details", Convert.ToString(ReferenciaTextBox.Text)},
+                '        {"idaccount", Convert.ToInt32(IDAcc)},
+                '        {"amount", Convert.ToDouble(DepositoTextBox.Text)},
+                '        {"summary", Convert.ToDouble(TotalTextBox.Text)}
+                '    }
+
+                '    Await db.Collection("Transactions").Document(IDAHORRO.ToString).SetAsync(datos)
+                '    MessageBox.Show("Item has been created successfully")
+                'End If
 
 
+                ''CargarIDCuentas()
 
-            '' Inicializa Firestore
-            'Firebase()
-
-            '' Recorre cada fila del DataGridView
-
-            '' Obtiene el ID del banco de la fila actual
-            'Dim fecha As Date = Convert.ToDateTime(Now).ToUniversalTime()
-
-            '' Verifica si ya existe un documento con el mismo ID
-            'Dim docRef = db.Collection("Transactions").Document(IDAHORRO.ToString)
-            'Dim docSnapshot = Await docRef.GetSnapshotAsync()
-
-            '' Verifica si el documento ya existe
-            'If docSnapshot.Exists Then
-            '    '' Si el documento ya existe, actualiza sus datos
-            '    Dim datos As New Dictionary(Of String, Object) From {
-            '        {"idbank", IDBan},
-            '        {"details", Convert.ToString(ReferenciaTextBox.Text)},
-            '        {"idaccount", Convert.ToInt32(IDAcc)}
-            '    }
-
-            '    Await docRef.SetAsync(datos, SetOptions.MergeAll)
-            '    MessageBox.Show("Update item successfully")
-            'Else
-            '    ' Si el documento no existe, crea uno nuevo
-            '    Dim datos As New Dictionary(Of String, Object) From {
-            '        {"idtransaction", IDAHORRO},
-            '        {"idbank", Convert.ToInt32(IDBan)},
-            '        {"type", Convert.ToString(TIPO)},
-            '        {"date", fecha},
-            '        {"details", Convert.ToString(ReferenciaTextBox.Text)},
-            '        {"idaccount", Convert.ToInt32(IDAcc)},
-            '        {"amount", Convert.ToDouble(DepositoTextBox.Text)},
-            '        {"summary", Convert.ToDouble(TotalTextBox.Text)}
-            '    }
-
-            '    Await db.Collection("Transactions").Document(IDAHORRO.ToString).SetAsync(datos)
-            '    MessageBox.Show("Item has been created successfully")
-            'End If
-
-
-            ''CargarIDCuentas()
-
-            cn.Open()
-            cmd = New SqlCommand("SELECT TOP(1) [idahorro]
+                cn.Open()
+                cmd = New SqlCommand("SELECT TOP(1) [idahorro]
                                     FROM [AHORROS].[dbo].[Movimientos]
                                     WHERE idahorro = " & IDAHORRO & "
                                     ORDER BY [idahorro] DESC") With {
-        .Connection = cn,
-        .CommandType = CommandType.Text
-            }
-            dr = cmd.ExecuteReader()
+                                                                .Connection = cn,
+                                                                .CommandType = CommandType.Text
+                                                                  }
+                dr = cmd.ExecuteReader()
 
-            If dr.Read Then
-
-                Using cn As New SqlConnection(My.Settings.AHORROSConnectionString)
-                    cn.Open()
+                If dr.Read = True Then
+                    dr.Close()
                     sql = "UPDATE [dbo].[Movimientos]
                             SET [idbanco] = @idbanco
                             ,[tipo] = @tipo
@@ -1049,23 +1050,18 @@ Public Class FormMovimientos
                     cmd.Parameters.AddWithValue("referencia", ReferenciaTextBox.Text)
                     cmd.Parameters.AddWithValue("fecha", Convert.ToDateTime(LblDate.Text))
                     cmd.Parameters.AddWithValue("idcuenta", IDAcc)
-                    cmd.Parameters.AddWithValue("deposito", DepositoTextBox.Text)
-                    cmd.Parameters.AddWithValue("total", TOT)
+                    cmd.Parameters.AddWithValue("deposito", Convert.ToDouble(DepositoTextBox.Text))
+                    cmd.Parameters.AddWithValue("total", (TOT + Convert.ToDouble(DepositoTextBox.Text)))
                     cmd.ExecuteNonQuery()
+
                     cn.Close()
-                End Using
 
-            Else
+                    '' si actualizamos cualquier registro, recalculara la sumatoria a partir del valor al 1 que se esta actualizando
+                    RecalcularTotalesDesde(IDAHORRO)
 
-                If ReferenciaTextBox.Text = "" Then
-                    ReferenciaTextBox.Text = "NINGUNA"
-                End If
-
-                If DepositoTextBox.Text <> "" Then
-
-                    Using cn As New SqlConnection(My.Settings.AHORROSConnectionString)
-                        cn.Open()
-                        sql = "INSERT INTO [dbo].[Movimientos]
+                Else
+                    dr.Close()
+                    sql = "INSERT INTO [dbo].[Movimientos]
                                ([idbanco]
                                ,[tipo]
                                ,[fecha]
@@ -1096,21 +1092,32 @@ Public Class FormMovimientos
                         cmd.Parameters.AddWithValue("deposito", DepositoTextBox.Text)
                         cmd.Parameters.AddWithValue("total", CANT)
                         cmd.ExecuteNonQuery()
-                        cn.Close()
-                    End Using
+                    cn.Close()
 
                 End If
 
             End If
-
-            dr.Close()
-            cn.Close()
 
         End If
 
         LoadForm()
 
     End Sub
+
+    Sub RecalcularTotalesDesde(id As Integer)
+        cn.Open()
+        Dim cmd As New SqlCommand("EXEC RecalcularTotalesDesde @id", cn)
+        cmd.Parameters.AddWithValue("@id", id)
+
+        Try
+            cmd.ExecuteNonQuery()
+            MessageBox.Show("Totales recalculados desde el ID " & id, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information)
+        Catch ex As Exception
+            MessageBox.Show("Error: " & ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        End Try
+        cn.Close()
+    End Sub
+
 
     Public Sub CargarID()
 
@@ -1140,7 +1147,6 @@ Public Class FormMovimientos
         '        End If
         '    End If
         'End If
-
 
         If IDAHORRO = 0 Then
             cn.Open()
@@ -1177,7 +1183,6 @@ Public Class FormMovimientos
 
     Private Sub PictureBox1_Click(sender As Object, e As EventArgs) Handles PictureBox1.Click
 
-
         Close()
 
     End Sub
@@ -1188,43 +1193,26 @@ Public Class FormMovimientos
 
     End Sub
 
-    Private Sub MovimientosDataGridView_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles MovimientosDataGridView.CellContentClick
 
-        Try
-            Dim index As Integer
-            index = e.RowIndex
-            Dim selectedRow As DataGridViewRow
-            selectedRow = MovimientosDataGridView.Rows(index)
+    Private Sub DepositoTextBox_TextChanged(sender As Object, e As EventArgs) Handles DepositoTextBox.TextChanged
 
-            IDAHORRO = selectedRow.Cells(0).Value
-            IDBan = selectedRow.Cells(1).Value
-            BancoComboBox.Text = selectedRow.Cells(2).Value
-            TIPO = selectedRow.Cells(3).Value.ToString
-            If TIPO = "DEPOSIT" Then
+        If IDAHORRO = 0 Then
+            TotalTextBox.Text = Format(TOT + Val(DepositoTextBox.Text), "#,###.##")
+            CANT = TOT + Val(DepositoTextBox.Text)
+
+            If Val(DepositoTextBox.Text) > 0 Then
                 RB_DEPOSITO.Checked = True
             Else
                 RB_RETIRO.Checked = True
             End If
-            LblDate.Text = selectedRow.Cells(4).Value
-            ReferenciaTextBox.Text = selectedRow.Cells(5).Value.ToString
-            IDAcc = selectedRow.Cells(6).Value
-            DescripcionComboBox.Text = selectedRow.Cells(7).Value
-            DepositoTextBox.Text = selectedRow.Cells(10).Value
-            TotalTextBox.Text = Format(selectedRow.Cells(11).Value, "#,###.##")
-        Catch ex As Exception
-        End Try
 
-    End Sub
-
-    Private Sub DepositoTextBox_TextChanged(sender As Object, e As EventArgs) Handles DepositoTextBox.TextChanged
-
-        TotalTextBox.Text = Format(TOT + Val(DepositoTextBox.Text), "#,###.##")
-        CANT = TOT + Val(DepositoTextBox.Text)
-
-        If Val(DepositoTextBox.Text) > 0 Then
-            RB_DEPOSITO.Checked = True
         Else
-            RB_RETIRO.Checked = True
+            TotalTextBox.Text = TOT + Val(DepositoTextBox.Text)
+            If Val(DepositoTextBox.Text) > 0 Then
+                RB_DEPOSITO.Checked = True
+            Else
+                RB_RETIRO.Checked = True
+            End If
         End If
 
     End Sub
@@ -1256,13 +1244,6 @@ Public Class FormMovimientos
 
     End Sub
 
-    Private Sub ReferenciaTextBox_MouseLeave(sender As Object, e As EventArgs) Handles ReferenciaTextBox.MouseLeave
-
-        If ReferenciaTextBox.Text = "" Then
-            ReferenciaTextBox.Text = "NINGUNA"
-        End If
-
-    End Sub
 
     Private Sub RectangleShape5_Click(sender As Object, e As EventArgs) Handles GuardarMov.Click
 
@@ -1273,8 +1254,6 @@ Public Class FormMovimientos
     Private Sub PictureBox2_Click(sender As Object, e As EventArgs) Handles PictureBox2.Click
 
         LoadForm()
-
-
 
     End Sub
 
@@ -1312,7 +1291,7 @@ Public Class FormMovimientos
                         cmd.Parameters.AddWithValue("referencia", ReferenciaTextBox.Text)
                         cmd.Parameters.AddWithValue("fecha", Convert.ToDateTime(LblDate.Text))
                         cmd.Parameters.AddWithValue("idcuenta", IDAcc)
-                        cmd.Parameters.AddWithValue("deposito", DepositoTextBox.Text)
+                        cmd.Parameters.AddWithValue("deposito", Convert.ToDouble(DepositoTextBox.Text))
                         cmd.Parameters.AddWithValue("total", TOT)
                         cmd.ExecuteNonQuery()
                         cn.Close()
@@ -1380,8 +1359,6 @@ Public Class FormMovimientos
 
     End Sub
 
-
-
     Private Sub TxtBuscar_TextChanged(sender As Object, e As EventArgs) Handles TxtBuscar.TextChanged
 
         'If (TxtBuscar.Text = "" Or TxtBuscar.Text = "Search...") Then
@@ -1416,7 +1393,7 @@ Public Class FormMovimientos
 
         ' Recorre cada fila del DataGridView
         For Each row As DataGridViewRow In MovimientosDataGridView.Rows
-            contador = contador + 1
+            contador += 1
             Label1.Text = "Data loading.. " + Convert.ToString(contador)
             ProgressBar1.Value = contador
 
@@ -1434,8 +1411,11 @@ Public Class FormMovimientos
                 Dim datos As New Dictionary(Of String, Object) From {
                     {"idtransaction", idtransaction},
                     {"idbank", Convert.ToInt32(row.Cells(1).Value)},
+                    {"type", Convert.ToString(row.Cells(3).Value)},
                     {"details", Convert.ToString(row.Cells(5).Value)},
-                    {"idaccount", Convert.ToInt32(row.Cells(6).Value)}
+                    {"idaccount", Convert.ToInt32(row.Cells(6).Value)},
+                    {"amount", Convert.ToDouble(row.Cells(8).Value)},
+                    {"summary", Convert.ToDouble(row.Cells(9).Value)}
                 }
                 Await docRef.SetAsync(datos, SetOptions.MergeAll)
             Else
@@ -1473,7 +1453,8 @@ Public Class FormMovimientos
 
         Firebase() ' Obtener datos de Firebase
 
-        Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction").Limit(50)
+        ''Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction").Limit(100)
+        Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction")
         Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
 
 
@@ -1580,6 +1561,7 @@ Public Class FormMovimientos
         DataGridTransactions.Refresh()
 
         CargarTransactionSQL()
+
     End Sub
 
     Public Sub CargarTransactionSQL()
@@ -1590,53 +1572,77 @@ Public Class FormMovimientos
         Using cn As New SqlConnection(My.Settings.AHORROSConnectionString)
             cn.Open()
 
-            ' sql = "insert into Asignaciones (codigo, cliente, turno, fecha, horas, observacion, autoriza, sucursal, horasextras, cambio, fcambio, dialibre, nombre, apellido, estado) VALUES(@codigo, @cliente, @turno, @fecha, @horas, @observacion, @autoriza, @sucursal, @hextras, @cambio, @fcambio, @dialibre, @nombre, @apellido, @estado)"
+            sql = "
+    MERGE INTO [dbo].[Movimientos] AS target
+    USING (VALUES (@idtransaction, @idbank, @idaccount, @type, @date, @details, @amount, @summary)) 
+          AS source (idahorro, idbanco, idcuenta, tipo, fecha, referencia, deposito, total)
+    ON (target.idahorro = source.idahorro)
+    WHEN MATCHED THEN
+        UPDATE SET target.idbanco = source.idbanco,
+                   target.idcuenta = source.idcuenta,
+                   target.tipo = source.tipo,
+                   target.fecha = source.fecha,
+                   target.referencia = source.referencia,
+                   target.deposito = source.deposito,
+                   target.total = source.total
+    WHEN NOT MATCHED THEN
+        INSERT (idahorro, idbanco, idcuenta, tipo, fecha, referencia, deposito, total)
+        VALUES (source.idahorro, source.idbanco, source.idcuenta, source.tipo, source.fecha, source.referencia, source.deposito, source.total);"
 
-            sql = "MERGE INTO [dbo].[Movimientos] AS target
-            USING (SELECT @idtransaction AS idahorro,
-                          @idbank AS idbanco,
-                          @idaccount AS idcuenta,
-                          @type AS tipo,
-                          @date AS fecha,
-                          @details AS referencia,
-                          @amount AS deposito,
-                          @summary AS total) AS source
-            ON (target.idahorro = source.idahorro)
-            WHEN MATCHED THEN
-                UPDATE SET idbanco = source.idbanco,
-                           idcuenta = source.idcuenta,
-                           tipo = source.tipo,
-                           fecha = source.fecha,
-                           referencia = source.referencia,
-                           deposito = source.deposito,
-                           total = source.total
-            WHEN NOT MATCHED THEN
-                INSERT (idahorro, idbanco, idcuenta, tipo, fecha, referencia, deposito, total)
-                VALUES (source.idahorro, source.idbanco, source.idcuenta, source.tipo, source.fecha, source.referencia, source.deposito, source.total);"
+            Dim cmd As New SqlCommand(sql, cn)
 
-            cmd = New SqlCommand(sql, cn)
-            Try
-                For Each row As DataGridViewRow In DataGridTransactions.Rows
-                    cmd.Parameters.Clear()
-                    cmd.Parameters.AddWithValue("@idtransaction", row.Cells("idtransactioncolumn").Value)
-                    cmd.Parameters.AddWithValue("@idbank", row.Cells("idbankcolumn").Value)
-                    cmd.Parameters.AddWithValue("@idaccount", row.Cells("idaccountcolumn").Value)
-                    cmd.Parameters.AddWithValue("@type", Convert.ToString(row.Cells("typecolumn").Value))
-                    cmd.Parameters.AddWithValue("@date", Convert.ToString(row.Cells("datecolumn").Value))
-                    cmd.Parameters.AddWithValue("@details", Convert.ToString(row.Cells("detailscolumn").Value))
-                    cmd.Parameters.AddWithValue("@amount", Convert.ToDecimal(row.Cells("amountcolumn").Value))
-                    cmd.Parameters.AddWithValue("@summary", Convert.ToDecimal(row.Cells("summarycolumn").Value))
-                    cmd.ExecuteNonQuery()
-                Next
-            Catch ex As Exception
-            End Try
+            For Each row As DataGridViewRow In DataGridTransactions.Rows
+                If row.IsNewRow Then Continue For
 
-            MessageBox.Show("Data has been load to SQLServer.")
+                cmd.Parameters.Clear()
+                cmd.Parameters.AddWithValue("@idtransaction", row.Cells("idtransactioncolumn").Value)
+                cmd.Parameters.AddWithValue("@idbank", row.Cells("idbankcolumn").Value)
+                cmd.Parameters.AddWithValue("@idaccount", row.Cells("idaccountcolumn").Value)
+                cmd.Parameters.AddWithValue("@type", Convert.ToString(row.Cells("typecolumn").Value))
+                cmd.Parameters.AddWithValue("@date", Convert.ToString(row.Cells("datecolumn").Value))
+                cmd.Parameters.AddWithValue("@details", Convert.ToString(row.Cells("detailscolumn").Value))
+                cmd.Parameters.AddWithValue("@amount", Convert.ToDecimal(row.Cells("amountcolumn").Value))
+                cmd.Parameters.AddWithValue("@summary", Convert.ToDecimal(row.Cells("summarycolumn").Value))
+                cmd.ExecuteNonQuery()
+            Next
+
             cn.Close()
+            MessageBox.Show("Data has been loaded.")
         End Using
+
+
 
         LoadForm()
     End Sub
+
+    Private Sub MovimientosDataGridView_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles MovimientosDataGridView.CellContentClick
+        If e.RowIndex < 0 Then Exit Sub ' Evita errores si se hace clic en el encabezado
+
+        Dim index As Integer = e.RowIndex
+        Dim selectedRow As DataGridViewRow = MovimientosDataGridView.Rows(index)
+
+        IDAHORRO = selectedRow.Cells(0).Value
+        IDBan = selectedRow.Cells(1).Value
+        BancoComboBox.Text = selectedRow.Cells(2).Value
+        TIPO = selectedRow.Cells(3).Value.ToString
+
+        If TIPO = "DEPOSIT" Then
+            RB_DEPOSITO.Checked = True
+        Else
+            RB_RETIRO.Checked = True
+        End If
+
+        LblDate.Text = selectedRow.Cells(4).Value
+        ReferenciaTextBox.Text = selectedRow.Cells(5).Value.ToString
+        IDAcc = selectedRow.Cells(6).Value
+        DescripcionComboBox.Text = selectedRow.Cells(7).Value
+        DepositoTextBox.Text = selectedRow.Cells(8).Value
+        TotalTextBox.Text = selectedRow.Cells(9).Value
+
+        ' se trae el valor total y se le resta el valor con el que se recargo en su momento
+        TOT = selectedRow.Cells(9).Value - selectedRow.Cells(8).Value
+    End Sub
+
 
 
 

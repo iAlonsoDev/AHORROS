@@ -30,6 +30,7 @@ Partial Class FormBancosCuentas
         Dim IdbancoLabel As System.Windows.Forms.Label
         Dim EstadoLabel As System.Windows.Forms.Label
         Dim NombreLabel As System.Windows.Forms.Label
+        Dim Label1 As System.Windows.Forms.Label
         Dim DataGridViewCellStyle1 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle2 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
         Dim DataGridViewCellStyle3 As System.Windows.Forms.DataGridViewCellStyle = New System.Windows.Forms.DataGridViewCellStyle()
@@ -47,6 +48,7 @@ Partial Class FormBancosCuentas
         Me.TabPage2 = New System.Windows.Forms.TabPage()
         Me.CuentasDataGridView = New System.Windows.Forms.DataGridView()
         Me.GroupBox1 = New System.Windows.Forms.GroupBox()
+        Me.BancoComboBox = New System.Windows.Forms.ComboBox()
         Me.CMD_UFB_A = New System.Windows.Forms.Button()
         Me.NombreCuenta = New System.Windows.Forms.TextBox()
         Me.Button2 = New System.Windows.Forms.Button()
@@ -64,7 +66,7 @@ Partial Class FormBancosCuentas
         Me.NombreBancos = New System.Windows.Forms.TextBox()
         Me.Button1 = New System.Windows.Forms.Button()
         Me.EstadoBancos = New System.Windows.Forms.ComboBox()
-        Me.Idbancos = New System.Windows.Forms.TextBox()
+        Me.Idbanco = New System.Windows.Forms.TextBox()
         Me.ShapeContainer1 = New Microsoft.VisualBasic.PowerPacks.ShapeContainer()
         Me.GuardarBank = New Microsoft.VisualBasic.PowerPacks.RectangleShape()
         Me.ShapeContainer3 = New Microsoft.VisualBasic.PowerPacks.ShapeContainer()
@@ -77,6 +79,7 @@ Partial Class FormBancosCuentas
         IdbancoLabel = New System.Windows.Forms.Label()
         EstadoLabel = New System.Windows.Forms.Label()
         NombreLabel = New System.Windows.Forms.Label()
+        Label1 = New System.Windows.Forms.Label()
         CType(Me.AHORROSDataSet, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.BancosBindingSource, System.ComponentModel.ISupportInitialize).BeginInit()
         CType(Me.CuentasBindingSource, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -94,7 +97,7 @@ Partial Class FormBancosCuentas
         IdbancoLabel1.AutoSize = True
         IdbancoLabel1.Font = New System.Drawing.Font("Microsoft YaHei", 8.25!)
         IdbancoLabel1.ForeColor = System.Drawing.SystemColors.ControlDarkDark
-        IdbancoLabel1.Location = New System.Drawing.Point(28, 42)
+        IdbancoLabel1.Location = New System.Drawing.Point(305, 43)
         IdbancoLabel1.Name = "IdbancoLabel1"
         IdbancoLabel1.Size = New System.Drawing.Size(50, 16)
         IdbancoLabel1.TabIndex = 10
@@ -105,7 +108,7 @@ Partial Class FormBancosCuentas
         IdcuentaLabel.AutoSize = True
         IdcuentaLabel.Font = New System.Drawing.Font("Microsoft YaHei", 8.25!)
         IdcuentaLabel.ForeColor = System.Drawing.SystemColors.ControlDarkDark
-        IdcuentaLabel.Location = New System.Drawing.Point(9, 16)
+        IdcuentaLabel.Location = New System.Drawing.Point(14, 16)
         IdcuentaLabel.Name = "IdcuentaLabel"
         IdcuentaLabel.Size = New System.Drawing.Size(69, 16)
         IdcuentaLabel.TabIndex = 8
@@ -116,7 +119,7 @@ Partial Class FormBancosCuentas
         CuentaLabel.AutoSize = True
         CuentaLabel.Font = New System.Drawing.Font("Microsoft YaHei", 8.25!)
         CuentaLabel.ForeColor = System.Drawing.SystemColors.ControlDarkDark
-        CuentaLabel.Location = New System.Drawing.Point(23, 68)
+        CuentaLabel.Location = New System.Drawing.Point(28, 68)
         CuentaLabel.Name = "CuentaLabel"
         CuentaLabel.Size = New System.Drawing.Size(55, 16)
         CuentaLabel.TabIndex = 12
@@ -127,7 +130,7 @@ Partial Class FormBancosCuentas
         EstadoLabel1.AutoSize = True
         EstadoLabel1.Font = New System.Drawing.Font("Microsoft YaHei", 8.25!)
         EstadoLabel1.ForeColor = System.Drawing.SystemColors.ControlDarkDark
-        EstadoLabel1.Location = New System.Drawing.Point(283, 13)
+        EstadoLabel1.Location = New System.Drawing.Point(345, 13)
         EstadoLabel1.Name = "EstadoLabel1"
         EstadoLabel1.Size = New System.Drawing.Size(42, 16)
         EstadoLabel1.TabIndex = 14
@@ -165,6 +168,17 @@ Partial Class FormBancosCuentas
         NombreLabel.Size = New System.Drawing.Size(70, 16)
         NombreLabel.TabIndex = 4
         NombreLabel.Text = "Bank Name:"
+        '
+        'Label1
+        '
+        Label1.AutoSize = True
+        Label1.Font = New System.Drawing.Font("Microsoft YaHei", 8.25!)
+        Label1.ForeColor = System.Drawing.SystemColors.ControlDarkDark
+        Label1.Location = New System.Drawing.Point(12, 41)
+        Label1.Name = "Label1"
+        Label1.Size = New System.Drawing.Size(70, 16)
+        Label1.TabIndex = 1006
+        Label1.Text = "Bank Name:"
         '
         'AHORROSDataSet
         '
@@ -207,7 +221,7 @@ Partial Class FormBancosCuentas
         Me.TabPage2.Location = New System.Drawing.Point(23, 4)
         Me.TabPage2.Name = "TabPage2"
         Me.TabPage2.Padding = New System.Windows.Forms.Padding(3)
-        Me.TabPage2.Size = New System.Drawing.Size(604, 372)
+        Me.TabPage2.Size = New System.Drawing.Size(673, 392)
         Me.TabPage2.TabIndex = 1
         Me.TabPage2.Text = "Account"
         '
@@ -266,12 +280,14 @@ Partial Class FormBancosCuentas
         Me.CuentasDataGridView.RowsDefaultCellStyle = DataGridViewCellStyle4
         Me.CuentasDataGridView.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.CuentasDataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
-        Me.CuentasDataGridView.Size = New System.Drawing.Size(542, 221)
+        Me.CuentasDataGridView.Size = New System.Drawing.Size(616, 239)
         Me.CuentasDataGridView.TabIndex = 1002
         Me.CuentasDataGridView.TabStop = False
         '
         'GroupBox1
         '
+        Me.GroupBox1.Controls.Add(Label1)
+        Me.GroupBox1.Controls.Add(Me.BancoComboBox)
         Me.GroupBox1.Controls.Add(Me.CMD_UFB_A)
         Me.GroupBox1.Controls.Add(Me.NombreCuenta)
         Me.GroupBox1.Controls.Add(Me.Button2)
@@ -285,13 +301,25 @@ Partial Class FormBancosCuentas
         Me.GroupBox1.Controls.Add(Me.ShapeContainer2)
         Me.GroupBox1.Location = New System.Drawing.Point(6, 8)
         Me.GroupBox1.Name = "GroupBox1"
-        Me.GroupBox1.Size = New System.Drawing.Size(584, 96)
+        Me.GroupBox1.Size = New System.Drawing.Size(653, 96)
         Me.GroupBox1.TabIndex = 17
         Me.GroupBox1.TabStop = False
         '
+        'BancoComboBox
+        '
+        Me.BancoComboBox.BackColor = System.Drawing.Color.WhiteSmoke
+        Me.BancoComboBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat
+        Me.BancoComboBox.Font = New System.Drawing.Font("Microsoft YaHei", 8.25!)
+        Me.BancoComboBox.ForeColor = System.Drawing.Color.FromArgb(CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
+        Me.BancoComboBox.FormattingEnabled = True
+        Me.BancoComboBox.Location = New System.Drawing.Point(88, 39)
+        Me.BancoComboBox.Name = "BancoComboBox"
+        Me.BancoComboBox.Size = New System.Drawing.Size(199, 24)
+        Me.BancoComboBox.TabIndex = 1005
+        '
         'CMD_UFB_A
         '
-        Me.CMD_UFB_A.Location = New System.Drawing.Point(429, 57)
+        Me.CMD_UFB_A.Location = New System.Drawing.Point(487, 57)
         Me.CMD_UFB_A.Name = "CMD_UFB_A"
         Me.CMD_UFB_A.Size = New System.Drawing.Size(149, 33)
         Me.CMD_UFB_A.TabIndex = 1004
@@ -306,7 +334,7 @@ Partial Class FormBancosCuentas
         Me.NombreCuenta.ForeColor = System.Drawing.SystemColors.WindowFrame
         Me.NombreCuenta.Location = New System.Drawing.Point(88, 66)
         Me.NombreCuenta.Name = "NombreCuenta"
-        Me.NombreCuenta.Size = New System.Drawing.Size(315, 20)
+        Me.NombreCuenta.Size = New System.Drawing.Size(377, 20)
         Me.NombreCuenta.TabIndex = 13
         '
         'Button2
@@ -319,7 +347,7 @@ Partial Class FormBancosCuentas
         Me.Button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.Button2.Font = New System.Drawing.Font("Microsoft YaHei", 9.0!)
         Me.Button2.ForeColor = System.Drawing.SystemColors.ButtonHighlight
-        Me.Button2.Location = New System.Drawing.Point(443, 22)
+        Me.Button2.Location = New System.Drawing.Point(502, 21)
         Me.Button2.Name = "Button2"
         Me.Button2.Size = New System.Drawing.Size(121, 26)
         Me.Button2.TabIndex = 16
@@ -332,7 +360,7 @@ Partial Class FormBancosCuentas
         Me.IdbancoCuenta.DataBindings.Add(New System.Windows.Forms.Binding("Text", Me.CuentasBindingSource, "idbanco", True))
         Me.IdbancoCuenta.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.IdbancoCuenta.ForeColor = System.Drawing.SystemColors.WindowFrame
-        Me.IdbancoCuenta.Location = New System.Drawing.Point(88, 40)
+        Me.IdbancoCuenta.Location = New System.Drawing.Point(365, 41)
         Me.IdbancoCuenta.Name = "IdbancoCuenta"
         Me.IdbancoCuenta.Size = New System.Drawing.Size(100, 20)
         Me.IdbancoCuenta.TabIndex = 11
@@ -345,6 +373,7 @@ Partial Class FormBancosCuentas
         Me.Idcuenta.ForeColor = System.Drawing.SystemColors.WindowFrame
         Me.Idcuenta.Location = New System.Drawing.Point(88, 14)
         Me.Idcuenta.Name = "Idcuenta"
+        Me.Idcuenta.ReadOnly = True
         Me.Idcuenta.Size = New System.Drawing.Size(100, 20)
         Me.Idcuenta.TabIndex = 9
         '
@@ -357,7 +386,7 @@ Partial Class FormBancosCuentas
         Me.EstadoCuentas.ForeColor = System.Drawing.SystemColors.WindowFrame
         Me.EstadoCuentas.FormattingEnabled = True
         Me.EstadoCuentas.Items.AddRange(New Object() {"1", "0"})
-        Me.EstadoCuentas.Location = New System.Drawing.Point(331, 14)
+        Me.EstadoCuentas.Location = New System.Drawing.Point(393, 14)
         Me.EstadoCuentas.Name = "EstadoCuentas"
         Me.EstadoCuentas.Size = New System.Drawing.Size(72, 21)
         Me.EstadoCuentas.TabIndex = 15
@@ -368,7 +397,7 @@ Partial Class FormBancosCuentas
         Me.ShapeContainer2.Margin = New System.Windows.Forms.Padding(0)
         Me.ShapeContainer2.Name = "ShapeContainer2"
         Me.ShapeContainer2.Shapes.AddRange(New Microsoft.VisualBasic.PowerPacks.Shape() {Me.GuardarAccount})
-        Me.ShapeContainer2.Size = New System.Drawing.Size(578, 77)
+        Me.ShapeContainer2.Size = New System.Drawing.Size(647, 77)
         Me.ShapeContainer2.TabIndex = 17
         Me.ShapeContainer2.TabStop = False
         '
@@ -378,7 +407,7 @@ Partial Class FormBancosCuentas
         Me.GuardarAccount.BackStyle = Microsoft.VisualBasic.PowerPacks.BackStyle.Opaque
         Me.GuardarAccount.BorderColor = System.Drawing.SystemColors.ButtonHighlight
         Me.GuardarAccount.CornerRadius = 5
-        Me.GuardarAccount.Location = New System.Drawing.Point(426, 2)
+        Me.GuardarAccount.Location = New System.Drawing.Point(483, 2)
         Me.GuardarAccount.Name = "GuardarAccount"
         Me.GuardarAccount.Size = New System.Drawing.Size(149, 32)
         '
@@ -388,7 +417,7 @@ Partial Class FormBancosCuentas
         Me.ShapeContainer4.Margin = New System.Windows.Forms.Padding(0)
         Me.ShapeContainer4.Name = "ShapeContainer4"
         Me.ShapeContainer4.Shapes.AddRange(New Microsoft.VisualBasic.PowerPacks.Shape() {Me.RectangleShape2})
-        Me.ShapeContainer4.Size = New System.Drawing.Size(598, 366)
+        Me.ShapeContainer4.Size = New System.Drawing.Size(667, 386)
         Me.ShapeContainer4.TabIndex = 1003
         Me.ShapeContainer4.TabStop = False
         '
@@ -400,7 +429,7 @@ Partial Class FormBancosCuentas
         Me.RectangleShape2.CornerRadius = 5
         Me.RectangleShape2.Location = New System.Drawing.Point(3, 111)
         Me.RectangleShape2.Name = "RectangleShape2"
-        Me.RectangleShape2.Size = New System.Drawing.Size(580, 244)
+        Me.RectangleShape2.Size = New System.Drawing.Size(652, 266)
         '
         'TabPage1
         '
@@ -411,7 +440,7 @@ Partial Class FormBancosCuentas
         Me.TabPage1.Location = New System.Drawing.Point(23, 4)
         Me.TabPage1.Name = "TabPage1"
         Me.TabPage1.Padding = New System.Windows.Forms.Padding(3)
-        Me.TabPage1.Size = New System.Drawing.Size(604, 372)
+        Me.TabPage1.Size = New System.Drawing.Size(673, 392)
         Me.TabPage1.TabIndex = 0
         Me.TabPage1.Text = "Bank"
         '
@@ -470,7 +499,7 @@ Partial Class FormBancosCuentas
         Me.BancosDataGridView.RowsDefaultCellStyle = DataGridViewCellStyle8
         Me.BancosDataGridView.ScrollBars = System.Windows.Forms.ScrollBars.Vertical
         Me.BancosDataGridView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect
-        Me.BancosDataGridView.Size = New System.Drawing.Size(557, 224)
+        Me.BancosDataGridView.Size = New System.Drawing.Size(622, 235)
         Me.BancosDataGridView.TabIndex = 1001
         Me.BancosDataGridView.TabStop = False
         '
@@ -481,19 +510,19 @@ Partial Class FormBancosCuentas
         Me.GroupBox2.Controls.Add(Me.Button1)
         Me.GroupBox2.Controls.Add(NombreLabel)
         Me.GroupBox2.Controls.Add(Me.EstadoBancos)
-        Me.GroupBox2.Controls.Add(Me.Idbancos)
+        Me.GroupBox2.Controls.Add(Me.Idbanco)
         Me.GroupBox2.Controls.Add(EstadoLabel)
         Me.GroupBox2.Controls.Add(IdbancoLabel)
         Me.GroupBox2.Controls.Add(Me.ShapeContainer1)
         Me.GroupBox2.Location = New System.Drawing.Point(6, 8)
         Me.GroupBox2.Name = "GroupBox2"
-        Me.GroupBox2.Size = New System.Drawing.Size(584, 96)
+        Me.GroupBox2.Size = New System.Drawing.Size(645, 96)
         Me.GroupBox2.TabIndex = 16
         Me.GroupBox2.TabStop = False
         '
         'CMD_UFB_B
         '
-        Me.CMD_UFB_B.Location = New System.Drawing.Point(458, 56)
+        Me.CMD_UFB_B.Location = New System.Drawing.Point(515, 56)
         Me.CMD_UFB_B.Name = "CMD_UFB_B"
         Me.CMD_UFB_B.Size = New System.Drawing.Size(111, 33)
         Me.CMD_UFB_B.TabIndex = 1003
@@ -522,7 +551,7 @@ Partial Class FormBancosCuentas
         Me.Button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat
         Me.Button1.Font = New System.Drawing.Font("Microsoft YaHei", 9.0!)
         Me.Button1.ForeColor = System.Drawing.SystemColors.ButtonHighlight
-        Me.Button1.Location = New System.Drawing.Point(315, 59)
+        Me.Button1.Location = New System.Drawing.Point(372, 59)
         Me.Button1.Name = "Button1"
         Me.Button1.Size = New System.Drawing.Size(121, 28)
         Me.Button1.TabIndex = 15
@@ -540,20 +569,21 @@ Partial Class FormBancosCuentas
         Me.EstadoBancos.Items.AddRange(New Object() {"1", "0"})
         Me.EstadoBancos.Location = New System.Drawing.Point(88, 66)
         Me.EstadoBancos.Name = "EstadoBancos"
-        Me.EstadoBancos.Size = New System.Drawing.Size(121, 21)
+        Me.EstadoBancos.Size = New System.Drawing.Size(100, 21)
         Me.EstadoBancos.TabIndex = 14
         '
-        'Idbancos
+        'Idbanco
         '
-        Me.Idbancos.BackColor = System.Drawing.SystemColors.MenuBar
-        Me.Idbancos.DataBindings.Add(New System.Windows.Forms.Binding("Text", Me.BancosBindingSource, "idbanco", True))
-        Me.Idbancos.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.Idbancos.ForeColor = System.Drawing.SystemColors.WindowFrame
-        Me.Idbancos.Location = New System.Drawing.Point(88, 14)
-        Me.Idbancos.Multiline = True
-        Me.Idbancos.Name = "Idbancos"
-        Me.Idbancos.Size = New System.Drawing.Size(100, 20)
-        Me.Idbancos.TabIndex = 3
+        Me.Idbanco.BackColor = System.Drawing.SystemColors.MenuBar
+        Me.Idbanco.DataBindings.Add(New System.Windows.Forms.Binding("Text", Me.BancosBindingSource, "idbanco", True))
+        Me.Idbanco.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Idbanco.ForeColor = System.Drawing.SystemColors.WindowFrame
+        Me.Idbanco.Location = New System.Drawing.Point(88, 14)
+        Me.Idbanco.Multiline = True
+        Me.Idbanco.Name = "Idbanco"
+        Me.Idbanco.ReadOnly = True
+        Me.Idbanco.Size = New System.Drawing.Size(100, 20)
+        Me.Idbanco.TabIndex = 3
         '
         'ShapeContainer1
         '
@@ -561,7 +591,7 @@ Partial Class FormBancosCuentas
         Me.ShapeContainer1.Margin = New System.Windows.Forms.Padding(0)
         Me.ShapeContainer1.Name = "ShapeContainer1"
         Me.ShapeContainer1.Shapes.AddRange(New Microsoft.VisualBasic.PowerPacks.Shape() {Me.GuardarBank})
-        Me.ShapeContainer1.Size = New System.Drawing.Size(578, 77)
+        Me.ShapeContainer1.Size = New System.Drawing.Size(639, 77)
         Me.ShapeContainer1.TabIndex = 16
         Me.ShapeContainer1.TabStop = False
         '
@@ -571,7 +601,7 @@ Partial Class FormBancosCuentas
         Me.GuardarBank.BackStyle = Microsoft.VisualBasic.PowerPacks.BackStyle.Opaque
         Me.GuardarBank.BorderColor = System.Drawing.SystemColors.ButtonHighlight
         Me.GuardarBank.CornerRadius = 5
-        Me.GuardarBank.Location = New System.Drawing.Point(299, 40)
+        Me.GuardarBank.Location = New System.Drawing.Point(357, 40)
         Me.GuardarBank.Name = "GuardarBank"
         Me.GuardarBank.Size = New System.Drawing.Size(149, 32)
         '
@@ -581,7 +611,7 @@ Partial Class FormBancosCuentas
         Me.ShapeContainer3.Margin = New System.Windows.Forms.Padding(0)
         Me.ShapeContainer3.Name = "ShapeContainer3"
         Me.ShapeContainer3.Shapes.AddRange(New Microsoft.VisualBasic.PowerPacks.Shape() {Me.RectangleShape1})
-        Me.ShapeContainer3.Size = New System.Drawing.Size(598, 366)
+        Me.ShapeContainer3.Size = New System.Drawing.Size(667, 386)
         Me.ShapeContainer3.TabIndex = 1002
         Me.ShapeContainer3.TabStop = False
         '
@@ -593,7 +623,7 @@ Partial Class FormBancosCuentas
         Me.RectangleShape1.CornerRadius = 5
         Me.RectangleShape1.Location = New System.Drawing.Point(6, 111)
         Me.RectangleShape1.Name = "RectangleShape1"
-        Me.RectangleShape1.Size = New System.Drawing.Size(575, 246)
+        Me.RectangleShape1.Size = New System.Drawing.Size(641, 246)
         '
         'TabControl1
         '
@@ -606,7 +636,7 @@ Partial Class FormBancosCuentas
         Me.TabControl1.Multiline = True
         Me.TabControl1.Name = "TabControl1"
         Me.TabControl1.SelectedIndex = 0
-        Me.TabControl1.Size = New System.Drawing.Size(631, 380)
+        Me.TabControl1.Size = New System.Drawing.Size(700, 400)
         Me.TabControl1.TabIndex = 16
         '
         'FormBancosCuentas
@@ -614,7 +644,7 @@ Partial Class FormBancosCuentas
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.SystemColors.MenuBar
-        Me.ClientSize = New System.Drawing.Size(631, 380)
+        Me.ClientSize = New System.Drawing.Size(700, 400)
         Me.Controls.Add(Me.TabControl1)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None
         Me.Name = "FormBancosCuentas"
@@ -653,7 +683,7 @@ Partial Class FormBancosCuentas
     Friend WithEvents NombreBancos As TextBox
     Friend WithEvents Button1 As Button
     Friend WithEvents EstadoBancos As ComboBox
-    Friend WithEvents Idbancos As TextBox
+    Friend WithEvents Idbanco As TextBox
     Friend WithEvents TabControl1 As TabControl
     Friend WithEvents ShapeContainer1 As PowerPacks.ShapeContainer
     Friend WithEvents GuardarBank As PowerPacks.RectangleShape
@@ -667,4 +697,5 @@ Partial Class FormBancosCuentas
     Friend WithEvents RectangleShape2 As PowerPacks.RectangleShape
     Friend WithEvents CMD_UFB_B As Button
     Friend WithEvents CMD_UFB_A As Button
+    Friend WithEvents BancoComboBox As ComboBox
 End Class
