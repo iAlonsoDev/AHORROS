@@ -8,11 +8,10 @@ Public Class FormMovimientos
     ReadOnly obj As New BUSQUEDADINAMICA
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-        'TODO: This line of code loads data into the 'AHORROSDataSet1.vw_Movimientos' table. You can move, or remove it, as needed.
-        'Me.Vw_MovimientosTableAdapter.Fill(Me.AHORROSDataSet1.vw_Movimientos)
+        If sender Is Nothing Then
+            Throw New ArgumentNullException(NameOf(sender))
+        End If
 
-        ''TODO: This line of code loads data into the 'AHORROSDataSet.vw_Movimientos' table. You can move, or remove it, as needed.
-        'Me.Vw_MovimientosTableAdapter.Fill(Me.AHORROSDataSet.vw_Movimientos)
 
         ' LAS TRANSACCIONES REALIZADAS DESDE MI APPLICACION DE FLUTTER CON FIREBASE SE DESCARGARAN Y SE SUBIRAN A SQL SERVER,
         ' PARA SINCRONIZAR LA INFORMACION ENTRE MI APP FLUTTER Y MI APP VB.NET
@@ -1375,9 +1374,11 @@ Public Class FormMovimientos
 
     End Sub
 
+
     Private Sub CMD_UFB_T_Click(sender As Object, e As EventArgs) Handles CMD_UFB_T.Click
         CargarTransactionFB()
     End Sub
+
 
     Public Async Sub CargarTransactionFB()
 
