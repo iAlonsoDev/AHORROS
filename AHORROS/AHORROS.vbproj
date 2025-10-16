@@ -173,7 +173,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="alonsodev-59063-4b12104e10c3.json" />
+    <None Include="alonsodev-59063-88fe2932311c.json" />
     <None Include="DATA\AHORROSDataSet.xsc">
       <DependentUpon>AHORROSDataSet.xsd</DependentUpon>
     </None>
@@ -231,13 +231,13 @@
       <Version>2.17.0</Version>
     </PackageReference>
     <PackageReference Include="Google.Api.Gax">
-      <Version>4.11.1</Version>
+      <Version>4.12.0</Version>
     </PackageReference>
     <PackageReference Include="Google.Api.Gax.Grpc">
-      <Version>4.11.1</Version>
+      <Version>4.12.0</Version>
     </PackageReference>
     <PackageReference Include="Google.Api.Gax.Rest">
-      <Version>4.11.1</Version>
+      <Version>4.12.0</Version>
     </PackageReference>
     <PackageReference Include="Google.Apis">
       <Version>1.72.0</Version>
@@ -249,19 +249,19 @@
       <Version>1.72.0</Version>
     </PackageReference>
     <PackageReference Include="Google.Cloud.Firestore">
-      <Version>3.10.0</Version>
+      <Version>3.11.0</Version>
     </PackageReference>
     <PackageReference Include="Google.Cloud.Firestore.V1">
-      <Version>3.10.0</Version>
+      <Version>3.11.0</Version>
     </PackageReference>
     <PackageReference Include="Google.Cloud.Location">
       <Version>2.3.0</Version>
     </PackageReference>
     <PackageReference Include="Google.LongRunning">
-      <Version>3.3.0</Version>
+      <Version>3.4.0</Version>
     </PackageReference>
     <PackageReference Include="Google.Protobuf">
-      <Version>3.32.1</Version>
+      <Version>3.33.0</Version>
     </PackageReference>
     <PackageReference Include="Grpc.Auth">
       <Version>2.71.0</Version>
@@ -282,7 +282,7 @@
       <Version>2.14.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Bcl.Build">
       <Version>1.0.21</Version>
@@ -302,10 +302,10 @@
       <Version>4.14.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.4</Version>
@@ -314,61 +314,61 @@
       <Version>4.6.1</Version>
     </PackageReference>
     <PackageReference Include="System.CodeDom">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Collections.Immutable">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Composition">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Composition.AttributedModel">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Composition.Convention">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Composition.Hosting">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Composition.Runtime">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Composition.TypedParts">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Diagnostics.DiagnosticSource">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.IO.Pipelines">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Linq.Async">
       <Version>6.0.3</Version>
     </PackageReference>
     <PackageReference Include="System.Management">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Memory">
       <Version>4.6.3</Version>
     </PackageReference>
     <PackageReference Include="System.Net.Http.WinHttpHandler">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Numerics.Vectors">
       <Version>4.6.1</Version>
     </PackageReference>
     <PackageReference Include="System.Reflection.Metadata">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
       <Version>6.1.2</Version>
     </PackageReference>
     <PackageReference Include="System.Text.Encoding.CodePages">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Threading.Channels">
-      <Version>9.0.9</Version>
+      <Version>9.0.10</Version>
     </PackageReference>
     <PackageReference Include="System.Threading.Tasks.Extensions">
       <Version>4.6.3</Version>
