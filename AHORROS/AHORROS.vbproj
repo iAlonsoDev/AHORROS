@@ -173,7 +173,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="alonsodev-59063-88fe2932311c.json" />
+    <None Include="alonsodev-59063-0ef8c3033075.json" />
     <None Include="DATA\AHORROSDataSet.xsc">
       <DependentUpon>AHORROSDataSet.xsd</DependentUpon>
     </None>
