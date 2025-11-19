@@ -462,6 +462,7 @@ Public Class FormBancosCuentas
 
             Idcuenta.Text = selectedRow.Cells(0).Value
             IdbancoCuenta.Text = selectedRow.Cells(1).Value
+            BancoComboBox.Text = selectedRow.Cells(2).Value
             NombreCuenta.Text = selectedRow.Cells(3).Value
             EstadoCuentas.SelectedItem = selectedRow.Cells(4).Value.ToString
         Catch ex As Exception
@@ -745,6 +746,5 @@ Public Class FormBancosCuentas
         cn.Close()
 
     End Sub
-
 
 End Class
