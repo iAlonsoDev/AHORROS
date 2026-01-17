@@ -95,7 +95,7 @@ Public Class FormMovimientos
 
         cn.Open()
         cmd = New SqlCommand("SELECT COALESCE(SUM(deposito), 0)  AS AVAILABLE
-                    FROM [AHORROS].[dbo].[Movimientos] WHERE IDBANCO <> 8") With {
+                    FROM [AHORROS].[dbo].[Movimientos] WHERE IDBANCO NOT IN (6, 8, 9)") With {
             .Connection = cn,
             .CommandType = CommandType.Text
         }
