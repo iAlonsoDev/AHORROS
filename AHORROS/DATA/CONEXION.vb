@@ -32,6 +32,7 @@ Public Module CONEXION
     '' VARIABLES FIREBASE
     Public db As FirestoreDb
 
+    <Obsolete>
     Public Sub Firebase()
         Try
             ' Ruta completa al archivo de credenciales
