@@ -32,34 +32,32 @@ Public Module CONEXION
     '' VARIABLES FIREBASE
     Public db As FirestoreDb
 
-    <Obsolete>
     Public Sub Firebase()
         Try
             ' Ruta completa al archivo de credenciales
             Dim pathToKeyFile As String = "C:\DATA\PROGRAMACION\Visual_Studio\AHORROS\AHORROS\alonsodev-59063-0ef8c3033075.json"
 
-            ' Verificar si el archivo de credenciales existe
+            ' Verificar si el archivo existe
             If Not System.IO.File.Exists(pathToKeyFile) Then
-                Throw New Exception("El archivo de credenciales no se encuentra en la ruta especificada.")
+                Throw New Exception("El archivo de credenciales no se encuentra en: " & pathToKeyFile)
             End If
 
-            ' Establecer la variable de entorno para Google Application Credentials
+            ' Establecer variable de entorno
             Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", pathToKeyFile)
 
-            ' Inicializar el Firebase Admin SDK con las credenciales de la cuenta de servicio
-            Dim credential As Google.Apis.Auth.OAuth2.GoogleCredential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(pathToKeyFile)
-
-            ' Verificar si la instancia de FirebaseApp ya ha sido creada
-            If FirebaseApp.DefaultInstance Is Nothing Then
-                FirebaseApp.Create(New AppOptions() With {.Credential = credential})
-            End If
-
-            ' Crear una instancia de FirestoreDb
+            ' Crear instancia de FirestoreDb directamente
+            ' Con Google.Cloud.Firestore no necesitas FirebaseApp
             db = FirestoreDb.Create("alonsodev-59063")
 
-            ''MessageBox.Show("Firebase inicializado correctamente.")
+            ' Opcional: Verificar conexión
+            If db IsNot Nothing Then
+                Console.WriteLine("Firebase Firestore inicializado correctamente.")
+            End If
+
         Catch ex As Exception
-            MessageBox.Show("Error inicializando Firebase: " & ex.ToString())
+            MessageBox.Show("Error inicializando Firebase: " & ex.Message & vbCrLf & vbCrLf &
+                          "Detalles: " & ex.ToString(), "Error de Conexión",
+                          MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
 
