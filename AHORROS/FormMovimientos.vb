@@ -84,7 +84,7 @@ Public Class FormMovimientos
         '    ' Acceder a los datos dentro de cada documento
         '    Dim data As Dictionary(Of String, Object) = docSnapshot.ToDictionary()
 
-        '    If data("idbank") <> 8 Then
+        '    If data("idbank") != 6 &&  data("idbank") != 8 &&  data("idbank") != 9 Then
         '        totavailable += data("amount")
         '    End If
         '    ' Obtener idbank y namebank
