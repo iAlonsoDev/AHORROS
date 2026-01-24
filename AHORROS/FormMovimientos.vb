@@ -89,7 +89,7 @@ Public Class FormMovimientos
         '    End If
         '    ' Obtener idbank y namebank
         '    AVAL = totavailable
-        '    Txt_TotalAvailable.Text = "Lps " + Format(Val(totavailable), "#,###.##")
+        '    Txt_TotalAvailable.Text = "L. " + Format(Val(totavailable), "#,###.##")
         'Next
 
 
@@ -102,7 +102,7 @@ Public Class FormMovimientos
         dr = cmd.ExecuteReader()
         If dr.Read Then
             AVAL = Convert.ToDouble(dr.Item("AVAILABLE"))
-            Txt_TotalAvailable.Text = "Lps " + Format(Val(AVAL), "#,###.##")
+            Txt_TotalAvailable.Text = "L. " + Format(Val(AVAL), "#,###.##")
         End If
 
         dr.Close()
@@ -113,32 +113,20 @@ Public Class FormMovimientos
     Public Sub LlenarPor()
         cn.Open()
         cmd = New SqlCommand("select 
-	                        y.porc,
-	                        case 
-		                        when y.valor < -10 then 'Rojo' 
-		                        else
-		                        case when y.valor between -10 and -5
-		                        then 'Amarillo' else
-		                        'Verde'
-		                        end
-		                        end color
-                        from(
-                        select x.*,
-                        str(((balance / best)-1) * 100) ++ '%'  porc,
-                        ((balance / best)-1) * 100 valor
-                        from 
-                        (SELECT 
-                        MAX(total) best,
-                        (SELECT 
-                        sum(deposito) balance
-                        FROM [AHORROS].[dbo].[Movimientos]) balance
-                        FROM [AHORROS].[dbo].[Movimientos]
-                        ) x) y") With {
+                            y.diferencia,
+                            y.porc,
+                            case when y.valor < -10 then 'Rojo' else 
+                            case when y.valor between -10 and -5 then 'Amarillo' 
+                            else 'Verde' end end color
+                            from (select x.*, str(((balance / best)-1) * 100) ++ '%'  porc, ((balance / best)-1) * 100 valor, balance - best diferencia
+                            from (SELECT MAX(total) best, (SELECT sum(deposito) balance FROM [AHORROS].[dbo].[Movimientos]) balance FROM [AHORROS].[dbo].[Movimientos]) x
+                            ) y") With {
             .Connection = cn,
             .CommandType = CommandType.Text
         }
         dr = cmd.ExecuteReader()
         If dr.Read Then
+            txtDiferencia.Text = "L " + Format(Val(dr.Item("diferencia")), "#,###.##")
             txtPorV.Text = Convert.ToString(dr.Item("porc"))
             txtPorR.Text = Convert.ToString(dr.Item("porc"))
             txtPorA.Text = Convert.ToString(dr.Item("porc"))
@@ -349,7 +337,7 @@ Public Class FormMovimientos
         '    ' Obtener idbank y namebank
         '    TOT = data("summary")
         '    TotalTextBox.Text = Format(Val(TOT), "#,###.##")
-        '    TxtCant_TotalBalance.Text = "Lps " + Format(Val(TOT), "#,###.##")
+        '    TxtCant_TotalBalance.Text = "L. " + Format(Val(TOT), "#,###.##")
         'Next
 
         cn.Open()
@@ -362,7 +350,7 @@ Public Class FormMovimientos
         If dr.Read Then
             TOT = dr.Item("TOTAL")
             TotalTextBox.Text = Format(Val(TOT), "#,###.##")
-            TxtCant_TotalBalance.Text = "Lps " + Format(Val(TOT), "#,###.##")
+            TxtCant_TotalBalance.Text = "L. " + Format(Val(TOT), "#,###.##")
         End If
 
         dr.Close()
@@ -415,7 +403,7 @@ Public Class FormMovimientos
         '        ' Actualiza la UI desde el hilo de la interfaz de usuario
         '        TxtTitle_TopBalance.Invoke(Sub()
         '                                       TxtTitle_TopBalance.Text = "TOP - " & bankName
-        '                                       TxtCant_TopBalance.Text = "Lps " & Convert.ToString(Format(Val(mostMoney), "#,###.##"))
+        '                                       TxtCant_TopBalance.Text = "L. " & Convert.ToString(Format(Val(mostMoney), "#,###.##"))
         '                                   End Sub)
         '    End If
 
@@ -439,7 +427,7 @@ Public Class FormMovimientos
         dr = cmd.ExecuteReader()
         If dr.Read Then
             TxtTitle_TopBalance.Text = "TOP" + " - " + dr.Item("Description")
-            TxtCant_TopBalance.Text = "Lps" + " " + Convert.ToString(Format(Val(dr.Item("Amount")), "#,###.##"))
+            TxtCant_TopBalance.Text = "L." + " " + Convert.ToString(Format(Val(dr.Item("Amount")), "#,###.##"))
         End If
 
         dr.Close()
@@ -461,7 +449,7 @@ Public Class FormMovimientos
 
         '    ' Obtener idbank y namebank
         '    LAST = data("amount")
-        '    TxtCant_LastTransaction.Text = "Lps " + Format(Val(LAST), "#,###.##")
+        '    TxtCant_LastTransaction.Text = "L. " + Format(Val(LAST), "#,###.##")
         'Next
 
         cn.Open()
@@ -472,7 +460,7 @@ Public Class FormMovimientos
         dr = cmd.ExecuteReader()
         If dr.Read Then
             LAST = dr.Item("DEPOSITO")
-            TxtCant_LastTransaction.Text = "Lps " + Format(Val(LAST), "#,###.##")
+            TxtCant_LastTransaction.Text = "L. " + Format(Val(LAST), "#,###.##")
         End If
 
         dr.Close()
@@ -493,7 +481,7 @@ Public Class FormMovimientos
 
         '    ' Obtener idbank y namebank
         '    BEST = data("summary")
-        '    Txt_BestRanking.Text = "Lps " + Format(Val(BEST), "#,###.##")
+        '    Txt_BestRanking.Text = "L. " + Format(Val(BEST), "#,###.##")
         'Next
 
         cn.Open()
@@ -505,7 +493,7 @@ Public Class FormMovimientos
         dr = cmd.ExecuteReader()
         If dr.Read Then
             BEST = dr.Item("Best")
-            Txt_BestRanking.Text = "Lps " + Format(Val(BEST), "#,###.##")
+            Txt_BestRanking.Text = "L. " + Format(Val(BEST), "#,###.##")
         End If
 
         dr.Close()
@@ -533,7 +521,7 @@ Public Class FormMovimientos
         'Next
 
         'PROM = (Tot / CantRegistros)
-        'TxtCant_Promedio.Text = "Lps " + Format(Val(PROM), "#,###.##")
+        'TxtCant_Promedio.Text = "L. " + Format(Val(PROM), "#,###.##")
 
 
 
@@ -546,7 +534,7 @@ Public Class FormMovimientos
         dr = cmd.ExecuteReader()
         If dr.Read Then
             PROM = dr.Item("Prom")
-            TxtCant_Promedio.Text = "Average: Lps " + Format(Val(PROM), "#,###.##")
+            TxtCant_Promedio.Text = "Average: L. " + Format(Val(PROM), "#,###.##")
         End If
 
         dr.Close()
@@ -1642,6 +1630,10 @@ Public Class FormMovimientos
 
         ' se trae el valor total y se le resta el valor con el que se recargo en su momento
         TOT = selectedRow.Cells(9).Value - selectedRow.Cells(8).Value
+    End Sub
+
+    Private Sub txtDiferencia_Click(sender As Object, e As EventArgs) Handles txtDiferencia.Click
+
     End Sub
 
 
