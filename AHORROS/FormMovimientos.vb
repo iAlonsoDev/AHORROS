@@ -1632,13 +1632,6 @@ Public Class FormMovimientos
         TOT = selectedRow.Cells(9).Value - selectedRow.Cells(8).Value
     End Sub
 
-    Private Sub txtDiferencia_Click(sender As Object, e As EventArgs) Handles txtDiferencia.Click
-
-    End Sub
-
-
-
-
     'Private Sub BancoComboBox2_SelectedIndexChanged(sender As Object, e As EventArgs)
 
     '    CargarIDBanco2()
