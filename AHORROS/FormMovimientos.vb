@@ -1617,8 +1617,10 @@ Public Class FormMovimientos
 
         If TIPO = "DEPOSIT" Then
             RB_DEPOSITO.Checked = True
-        Else
+        ElseIf TIPO = "WITHDRAWAL" Then
             RB_RETIRO.Checked = True
+        Else
+            RB_TRANSFERENCIA.Checked = True
         End If
 
         LblDate.Text = selectedRow.Cells(4).Value
