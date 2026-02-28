@@ -111,6 +111,7 @@ Public Class FormMovimientos
     End Sub
 
     Public Sub LlenarPor()
+        ' Evitar división por cero y asegurar valores por defecto cuando no hay datos
         cn.Open()
         cmd = New SqlCommand("select 
                             y.diferencia,
@@ -124,25 +125,47 @@ Public Class FormMovimientos
             .Connection = cn,
             .CommandType = CommandType.Text
         }
+
         dr = cmd.ExecuteReader()
+
         If dr.Read Then
-            txtDiferencia.Text = "L " + Format(Val(dr.Item("diferencia")), "#,###.##")
-            txtPorV.Text = Convert.ToString(dr.Item("porc"))
-            txtPorR.Text = Convert.ToString(dr.Item("porc"))
-            txtPorA.Text = Convert.ToString(dr.Item("porc"))
-            Color = Convert.ToString(dr.Item("color"))
+            ' Asignar valores defensivamente, manejando posibles DBNull
+            Dim dif As Object = If(IsDBNull(dr.Item("diferencia")), 0, dr.Item("diferencia"))
+            Dim porc As String = If(IsDBNull(dr.Item("porc")), "0.00%", Convert.ToString(dr.Item("porc")))
+            Dim col As String = If(IsDBNull(dr.Item("color")), "Verde", Convert.ToString(dr.Item("color")))
+
+            ' Convertir de forma segura a Decimal y formatear siempre con dos decimales
+            Dim difDec As Decimal
+
+            Try
+                difDec = Convert.ToDecimal(dif)
+            Catch ex As Exception
+                difDec = 0D
+            End Try
+            txtDiferencia.Text = "L " & difDec.ToString("#,##0.00")
+            txtPorV.Text = porc
+            txtPorR.Text = porc
+            txtPorA.Text = porc
+            Color = col
+        Else
+            txtDiferencia.Text = "L 0.00"
+            txtPorV.Text = "0.00%"
+            txtPorR.Text = "0.00%"
+            txtPorA.Text = "0.00%"
+            Color = "Verde"
         End If
+
+        txtPorV.Visible = False
+        txtPorR.Visible = False
+        txtPorA.Visible = False
 
         If (Color = "Rojo") Then
             txtPorR.Visible = True
+        ElseIf (Color = "Amarillo") Then
+            txtPorA.Visible = True
         Else
-            If (Color = "Amarillo") Then
-                txtPorA.Visible = True
-            Else
-                txtPorV.Visible = True
-            End If
+            txtPorV.Visible = True
         End If
-
 
         dr.Close()
         cn.Close()
