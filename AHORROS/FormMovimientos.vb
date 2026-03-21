@@ -1657,6 +1657,7 @@ Public Class FormMovimientos
         TOT = selectedRow.Cells(9).Value - selectedRow.Cells(8).Value
     End Sub
 
+
     'Private Sub BancoComboBox2_SelectedIndexChanged(sender As Object, e As EventArgs)
 
     '    CargarIDBanco2()

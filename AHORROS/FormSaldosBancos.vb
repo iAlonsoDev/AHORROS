@@ -15,7 +15,7 @@ Public Class FormSaldosBancos
 
                 SELECT #TEMP.b AS AMOUNT,  A +' - '+ B AS DESSCRIPTION, A AS BANK FROM #TEMP
                 WHERE #TEMP.b <> 'L0.00'  
-                ORDER BY BANK DESC
+                ORDER BY AMOUNT DESC
                 DROP TABLE #TEMP"
 
         '"Select Case
@@ -58,7 +58,4 @@ Public Class FormSaldosBancos
         SaldosLoad()
     End Sub
 
-    Private Sub SaldosDataGridView_CellContentClick(sender As Object, e As DataGridViewCellEventArgs) Handles SaldosDataGridView.CellContentClick
-
-    End Sub
 End Class
