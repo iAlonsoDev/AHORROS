@@ -17,8 +17,17 @@ Public Class FormMovimientos
         ' PARA SINCRONIZAR LA INFORMACION ENTRE MI APP FLUTTER Y MI APP VB.NET
         ' se probo con conexion full a firebase pero el consumo de datos era demasiado, la cuota de google
         If MsgBox("Load data to SQLServer from Firebase?", MsgBoxStyle.Question + MessageBoxButtons.YesNo) = MsgBoxResult.Yes Then
+
+            Select Case MsgBox("Download all data?", MsgBoxStyle.Question + MessageBoxButtons.YesNo)
+                Case MsgBoxResult.Yes
+                    DownoladAll = 1
+                Case Else
+                    DownoladAll = 0
+            End Select
+
             DownloadFirebase()
             LoadForm()
+
         Else
             LoadForm()
         End If
@@ -1456,7 +1465,14 @@ Public Class FormMovimientos
 
     Private Sub CMD_DFB_T_Click(sender As Object, e As EventArgs) Handles CMD_DFB_T.Click
 
+        If MsgBox("Download all data?", MsgBoxStyle.Question + MessageBoxButtons.YesNo) = MsgBoxResult.Yes Then
+            DownoladAll = 1
+        Else
+            DownoladAll = 0
+        End If
+
         DownloadFirebase()
+        LoadForm()
 
     End Sub
 
@@ -1464,9 +1480,15 @@ Public Class FormMovimientos
         'MovimientosDataGridView.DataSource = Nothing ' Limpiar datos existentes
 
         Firebase() ' Obtener datos de Firebase
+        Dim Qref As Query
 
-        Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction").Limit(100)
-        ''Dim Qref As Query = db.Collection("Transactions").OrderByDescending("idtransaction")
+        Select Case DownoladAll
+            Case 1
+                Qref = db.Collection("Transactions").OrderByDescending("idtransaction")
+            Case Else
+                Qref = db.Collection("Transactions").OrderByDescending("idtransaction").Limit(100)
+        End Select
+
         Dim Snap As QuerySnapshot = Await Qref.GetSnapshotAsync()
 
 

@@ -28,6 +28,8 @@ Public Module CONEXION
 
     '' variables disparadoras
     Public LoadA As Integer
+    Public DownoladAll As Integer
+
 
     '' VARIABLES FIREBASE
     Public db As FirestoreDb
